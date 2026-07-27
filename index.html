@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>統合ライフコーチ</title>
+<meta name="theme-color" content="#1E4D3B">
+<meta name="description" content="家計と食事をひとつの習慣に。スマホの中だけで完結するローカルなライフコーチアプリ(単一ファイル版)。">
+
+<link rel="icon" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ライフコーチ">
+
+<style>
+:root {
+  --green: #1E4D3B;
+  --green-l: #3C6E58;
+  --pale: #C9DED2;
+  --red: #C43E2F;
+  --gold: #B8860B;
+  --gold-bg: #F3E9D2;
+  --paper: #F7F6F1;
+  --ink: #26241F;
+  --muted: #6D6A60;
+  --rule: #DDD9CC;
+  --white: #ffffff;
+
+  --serif: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --sans: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Hiragino Sans", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: #EAEAE4;
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  max-width: 460px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- ヘッダー ---------- */
+.app-header {
+  background: var(--green);
+  color: #fff;
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.app-header .eyebrow { font-size: 11px; letter-spacing: 2px; color: var(--pale); margin: 0 0 2px; }
+.app-header .date { font-family: var(--serif); font-size: 18px; font-weight: 700; margin: 0; }
+.stamp {
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--red); border-radius: 999px; color: var(--red);
+  font-family: var(--serif); font-weight: 700; flex-shrink: 0;
+}
+
+/* ---------- コンテンツ ---------- */
+.content { flex: 1; padding: 18px 18px 90px; overflow-y: auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---------- カード ---------- */
+.card {
+  background: #fff; border: 1px solid var(--rule); border-radius: 16px;
+  padding: 16px; margin-bottom: 14px;
+}
+.card-hero { background: var(--green); border-radius: 16px; padding: 16px; margin-bottom: 14px; color: #fff; }
+.card-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--green); margin: 0 0 10px; }
+.card-title.on-hero { color: #fff; }
+.muted { color: var(--muted); font-size: 12px; }
+.muted-sm { color: var(--muted); font-size: 11px; }
+
+/* ---------- ボタン ---------- */
+.btn { border: none; border-radius: 14px; padding: 12px; font-weight: 700; font-size: 14px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn-green { background: var(--green); color: #fff; }
+.btn-red { background: var(--red); color: #fff; }
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-outline { background: #fff; color: var(--green); border: 1px solid var(--rule); }
+.btn-sm { padding: 8px; font-size: 12px; border-radius: 10px; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ---------- チップ ---------- */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chip { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fff; color: var(--ink); border: 1px solid var(--rule); cursor: pointer; }
+.chip.active { background: var(--green); color: #fff; border-color: var(--green); }
+.chip.accent-active { background: var(--red); color: #fff; border-color: var(--red); }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.tag-strong { background: var(--green); color: #fff; }
+.tag-mid { background: var(--pale); color: var(--green); }
+.tag-weak { background: var(--rule); color: var(--muted); }
+.impact-chip { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin: 0 6px 6px 0; }
+.impact-down { background: var(--pale); color: var(--green); }
+.impact-up { background: var(--gold-bg); color: var(--gold); }
+
+/* ---------- フォーム ---------- */
+input[type=text], input[type=number], textarea, select {
+  width: 100%; border: 1px solid var(--rule); border-radius: 12px; padding: 10px 12px;
+  font-size: 14px; font-family: var(--sans); color: var(--ink); background: #fff;
+}
+textarea { resize: vertical; }
+.field-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: block; }
+.field-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.field-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* ---------- セグメントタブ ---------- */
+.seg { display: flex; background: var(--rule); border-radius: 999px; padding: 4px; margin-bottom: 14px; }
+.seg button { flex: 1; background: none; border: none; border-radius: 999px; padding: 7px 0; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+.seg button.active { background: var(--green); color: #fff; }
+.seg.accent button.active { background: var(--red); }
+
+/* ---------- プログレスバー ---------- */
+.progress-row { margin-bottom: 12px; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.progress-track { height: 8px; border-radius: 999px; background: var(--rule); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 999px; background: var(--green); }
+.progress-fill.bad { background: var(--red); }
+.progress-track.on-hero { background: rgba(255,255,255,.25); }
+.progress-fill.on-hero { background: #fff; }
+
+/* ---------- リスト行 ---------- */
+.row { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.row .amount { font-weight: 700; color: var(--green); }
+.timeline-row { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.timeline-row .body { flex: 1; min-width: 0; }
+.timeline-row .body p { margin: 0; }
+.timeline-row .title { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- カレンダー ---------- */
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
+.calendar-cell { aspect-ratio: 1 / 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 1px solid transparent; cursor: pointer; }
+.calendar-cell.today { border-color: var(--red); }
+.calendar-cell.selected { border-color: var(--green); }
+
+/* ---------- 年次バー ---------- */
+.year-bars { display: flex; align-items: flex-end; gap: 4px; height: 140px; margin-bottom: 8px; }
+.year-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 130px; }
+.year-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--pale); }
+.year-bar.current { background: var(--red); }
+
+/* ---------- 提案カード ---------- */
+.candidate { border: 1px solid var(--rule); border-radius: 16px; padding: 14px; margin-bottom: 10px; background: #fff; cursor: pointer; }
+.candidate.committed { background: var(--pale); border-color: var(--green); }
+.candidate .top { display: flex; align-items: flex-start; gap: 10px; }
+.candidate .title { font-size: 14px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 4px; }
+.candidate .reason { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+.candidate input[type=checkbox] { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ---------- 予定行 ---------- */
+.schedule-row { background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+.schedule-row .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.schedule-row .top select { width: auto; font-size: 12px; padding: 5px 8px; }
+.schedule-row .date-label { font-weight: 700; font-size: 13px; }
+
+/* ---------- ボトムナビ ---------- */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 460px; background: #fff; border-top: 1px solid var(--rule);
+  display: flex; padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-nav button {
+  flex: 1; background: none; border: none; padding: 10px 0 8px; display: flex;
+  flex-direction: column; align-items: center; gap: 3px; color: var(--muted); cursor: pointer;
+}
+.bottom-nav button.active { color: var(--red); }
+.bottom-nav svg { width: 20px; height: 20px; }
+.bottom-nav .label { font-size: 10px; font-weight: 700; }
+
+/* ---------- トースト ---------- */
+#toast {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;
+  font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .25s;
+  max-width: 90%; text-align: center; z-index: 999;
+}
+#toast.show { opacity: 1; }
+
+.issue { color: var(--red); font-size: 12px; margin: 4px 0; }
+.ok-line { color: var(--green); font-size: 12px; margin: 4px 0; }
+.empty-box { border: 1px dashed var(--rule); border-radius: 16px; padding: 22px; text-align: center; }
+.empty-box .muted { display: block; margin-top: 6px; }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="app-header">
+    <div>
+      <p class="eyebrow">統合ライフコーチ</p>
+      <p class="date" id="header-date">-</p>
+    </div>
+    <div class="stamp" id="header-stamp" style="width:40px;height:40px;font-size:14px;">統合</div>
+  </div>
+
+  <div class="content">
+    <section class="view" id="view-home"></section>
+    <section class="view" id="view-budget"></section>
+    <section class="view" id="view-meal"></section>
+    <section class="view" id="view-plan"></section>
+    <section class="view" id="view-settings"></section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span class="label">ホーム</span></button>
+    <button data-tab="budget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.4"/></svg><span class="label">家計</span></button>
+    <button data-tab="meal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a3 3 0 0 0 3 3v8"/><path d="M6 3v6M9 3v6"/><path d="M18 3c-1.5 0-3 1.5-3 5s1.5 5 3 5v8"/></svg><span class="label">食事</span></button>
+    <button data-tab="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l1.8 4.9L19 8.5l-4 3.3 1.2 5.2L12 14l-4.2 3 1.2-5.2-4-3.3 5.2-1.6z"/></svg><span class="label">プラン</span></button>
+    <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="label">設定</span></button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// data.js
+// ============================================================
+/**
+ * data.js — アプリ全体の定数
+ * 実際に運用している家計簿アプリの費目一覧に合わせている。
+ */
+
+const MAIN_CATEGORIES = [
+  "家賃", "交通費", "娯楽", "娯楽用コンビニ&自販機", "自炊用食品", "コンビニご飯(朝昼)",
+  "昼外食", "夜外食", "交際費(会合)", "交際費(贈物)", "日用品",
+  "教育費", "社用費", "特別費", "通信費", "衣服", "光熱費", "美容", "医療費", "貯金",
+];
+
+const INCOME_LABELS = ["給与", "賞与", "副収入", "その他"];
+
+const SCHEDULE_TYPES = ["出社", "在宅勤務", "休日", "残業", "飲み会", "デート", "旅行", "通院", "買い物", "趣味", "運動", "イベント", "その他"];
+
+window.APP_DATA = { MAIN_CATEGORIES, INCOME_LABELS, SCHEDULE_TYPES };
+
+
+// ============================================================
+// db.js
+// ============================================================
+/**
+ * db.js — 永続化レイヤー(IndexedDB)
+ *
+ * 設計方針(PC版のSQLiteと同じ考え方を踏襲):
+ *  - スキーマ変更は「加算のみ」。onupgradeneeded では既存のオブジェクトストアを
+ *    削除・リネームせず、足りないものだけ追加する。バージョンを上げても
+ *    既存データは失われない。
+ *  - 「今どのバージョンのアプリを使っていても、古いデータを読み込める」ことを
+ *    最優先する。
+ *
+ * ストア構成:
+ *  - kv            : 単一設定値(goals/profile/apiKey/fixedCosts/categoryBudgets/
+ *                     schedule/planCandidates/committedWeek/pastCommits/feedbackLog)
+ *  - expenses      : 支出明細 { id, category, amount, memo, dateISO, monthKey }
+ *  - incomes       : 収入明細 { id, label, amount, dateISO, monthKey }
+ *  - meals         : 食事記録 { id, text, kcal, protein, fat, carbs, salt, note, dateISO, monthKey }
+ */
+
+const DB_NAME = "lifecoach_db";
+const DB_VERSION = 1;
+
+let _dbPromise = null;
+
+function openDB() {
+  if (_dbPromise) return _dbPromise;
+  _dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      // 加算のみ: 既にあるストアには触れない。無ければ作る。
+      if (!db.objectStoreNames.contains("kv")) {
+        db.createObjectStore("kv", { keyPath: "key" });
+      }
+      if (!db.objectStoreNames.contains("expenses")) {
+        const s = db.createObjectStore("expenses", { keyPath: "id", autoIncrement: true });
+        s.createIndex("monthKey", "monthKey", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("incomes")) {
+        const s = db.createObjectStore("incomes", { keyPath: "id", autoIncrement: true });
+        s.createIndex("monthKey", "monthKey", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("meals")) {
+        const s = db.createObjectStore("meals", { keyPath: "id", autoIncrement: true });
+        s.createIndex("monthKey", "monthKey", { unique: false });
+        s.createIndex("dateISO", "dateISO", { unique: false });
+      }
+      // 将来バージョンを上げるときは、ここに「無ければ追加」を足していくだけにする。
+    };
+
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return _dbPromise;
+}
+
+function tx(storeName, mode = "readonly") {
+  return openDB().then((db) => db.transaction(storeName, mode).objectStore(storeName));
+}
+
+function wrap(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// ---------------- kv(単一設定値) ----------------
+
+const KV_DEFAULTS = {
+  goals: { targetKcal: 2000, proteinRatio: 20, fatRatio: 25, carbsRatio: 55, savingsTarget: 30000 },
+  profile: { age: "", height: "", weight: "", targetWeight: "", rules: "" },
+  apiKey: "",
+  fixedCosts: [],
+  categoryBudgets: {},
+  schedule: null, // null なら初回起動時に来週分を生成する
+  scheduleWeekStart: null, // どの週の予定かを識別するためのISO日付(日曜)
+  planCandidates: [],
+  committedWeek: [],
+  pastCommits: [],
+  feedbackLog: [],
+};
+
+async function kvGet(key) {
+  const store = await tx("kv");
+  const row = await wrap(store.get(key));
+  if (row) return row.value;
+  return KV_DEFAULTS.hasOwnProperty(key) ? KV_DEFAULTS[key] : undefined;
+}
+
+async function kvSet(key, value) {
+  const store = await tx("kv", "readwrite");
+  await wrap(store.put({ key, value }));
+  return value;
+}
+
+// ---------------- 明細系(expenses / incomes / meals) ----------------
+
+function monthKeyOf(dateISO) {
+  return dateISO.slice(0, 7); // "YYYY-MM"
+}
+function todayISO() {
+  const d = new Date();
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d - tz).toISOString().slice(0, 10);
+}
+
+async function addExpense({ category, amount, memo }) {
+  const dateISO = todayISO();
+  const store = await tx("expenses", "readwrite");
+  const record = { category, amount, memo: memo || "", dateISO, monthKey: monthKeyOf(dateISO), createdAt: Date.now() };
+  const id = await wrap(store.add(record));
+  return { ...record, id };
+}
+async function addIncome({ label, amount }) {
+  const dateISO = todayISO();
+  const store = await tx("incomes", "readwrite");
+  const record = { label, amount, dateISO, monthKey: monthKeyOf(dateISO), createdAt: Date.now() };
+  const id = await wrap(store.add(record));
+  return { ...record, id };
+}
+async function addMeal({ text, kcal, protein, fat, carbs, salt, note }) {
+  const dateISO = todayISO();
+  const store = await tx("meals", "readwrite");
+  const record = { text, kcal, protein, fat, carbs, salt, note, dateISO, monthKey: monthKeyOf(dateISO), createdAt: Date.now() };
+  const id = await wrap(store.add(record));
+  return { ...record, id };
+}
+
+async function getByMonth(storeName, monthKey) {
+  const store = await tx(storeName);
+  const idx = store.index("monthKey");
+  const rows = await wrap(idx.getAll(monthKey));
+  return rows.sort((a, b) => b.createdAt - a.createdAt);
+}
+async function getByDate(storeName, dateISO) {
+  const rows = await getByMonth(storeName, monthKeyOf(dateISO));
+  return rows.filter((r) => r.dateISO === dateISO);
+}
+async function getAllRows(storeName) {
+  const store = await tx(storeName);
+  return wrap(store.getAll());
+}
+
+// ---------------- エクスポート/インポート(バックアップ) ----------------
+
+async function exportAllData() {
+  const [expenses, incomes, meals] = await Promise.all([
+    getAllRows("expenses"), getAllRows("incomes"), getAllRows("meals"),
+  ]);
+  const kv = {};
+  for (const key of Object.keys(KV_DEFAULTS)) {
+    kv[key] = await kvGet(key);
+  }
+  return { schema: "life-coach-mobile.v1", exportedAt: new Date().toISOString(), kv, expenses, incomes, meals };
+}
+
+async function importAllData(payload) {
+  if (!payload || payload.schema !== "life-coach-mobile.v1") {
+    throw new Error("このファイルは統合ライフコーチのバックアップ形式ではありません");
+  }
+  for (const [key, value] of Object.entries(payload.kv || {})) {
+    await kvSet(key, value);
+  }
+  for (const storeName of ["expenses", "incomes", "meals"]) {
+    const store = await tx(storeName, "readwrite");
+    await wrap(store.clear());
+    for (const record of payload[storeName] || []) {
+      const { id, ...rest } = record;
+      await wrap(store.add(rest));
+    }
+  }
+}
+
+window.DB = {
+  kvGet, kvSet, addExpense, addIncome, addMeal,
+  getByMonth, getByDate, getAllRows,
+  monthKeyOf, todayISO,
+  exportAllData, importAllData,
+};
+
+
+// ============================================================
+// ai.js
+// ============================================================
+/**
+ * ai.js — Anthropic APIをブラウザから直接呼び出す層。
+ *
+ * 重要: このアプリにはサーバーが無いため、APIキーはこの端末の中(IndexedDB)にのみ
+ * 保存され、呼び出しのたびにブラウザから直接 api.anthropic.com へ送られる。
+ * 「anthropic-dangerous-direct-browser-access」ヘッダーは、ブラウザから直接
+ * 呼び出していることをAnthropic側に明示するためのもの(仕様上必須)。
+ *
+ * キーの安全性については README / 設定タブに明記のとおり、
+ *  - このキーでの利用上限額をAnthropicコンソール側で必ず設定すること
+ *  - 端末を他人と共有しないこと
+ * を前提とする。
+ */
+
+const AI_MODEL = "claude-sonnet-4-6"; // 変更したい場合はここを書き換える
+
+class AIError extends Error {}
+
+async function callClaude(prompt, apiKey, maxTokens = 1000) {
+  if (!apiKey) {
+    throw new AIError("APIキーが設定されていません。設定タブで入力してください。");
+  }
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: maxTokens,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+  } catch (e) {
+    throw new AIError("通信できませんでした。インターネット接続を確認してください。");
+  }
+  if (!res.ok) {
+    let msg = `APIエラー(${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.error?.message) msg = body.error.message;
+      if (res.status === 401) msg = "APIキーが正しくないようです。設定タブを確認してください。";
+      if (res.status === 429) msg = "利用上限に達しました。しばらく待つか、Anthropicコンソールで上限を確認してください。";
+    } catch (_) { /* ignore */ }
+    throw new AIError(msg);
+  }
+  const data = await res.json();
+  const text = (data.content || []).map((b) => (b.type === "text" ? b.text : "")).join("\n").trim();
+  return text.replace(/```json/g, "").replace(/```/g, "").trim();
+}
+
+async function callClaudeJSON(prompt, apiKey, maxTokens = 1000) {
+  const text = await callClaude(prompt, apiKey, maxTokens);
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new AIError("AIの応答をうまく読み取れませんでした。もう一度試してください。");
+  }
+}
+
+// ---------------- 栄養推定 ----------------
+
+async function estimateNutrition(mealText, apiKey) {
+  const prompt =
+    `以下の食事内容から栄養価を推定し、JSON形式のみで出力してください。前置き・説明・コードブロック記号は一切書かないでください。\n\n` +
+    `食事内容:「${mealText}」\n\n` +
+    `出力形式(数値は単位を含めない):\n{"kcal":数値,"protein":数値,"fat":数値,"carbs":数値,"salt":数値,"note":"分量の想定など短い一言"}\n\n` +
+    `分量が不明な場合は一般的な標準量を仮定してよいので、必ず数値を返し、noteに前提を書いてください。`;
+  return callClaudeJSON(prompt, apiKey, 600);
+}
+
+// ---------------- 来週プランの生成・微修正 ----------------
+
+function categoryListText() {
+  return APP_DATA.MAIN_CATEGORIES.filter((c) => c !== "貯金").join("、");
+}
+
+async function generatePlanCandidates(context, apiKey) {
+  const prompt =
+    `あなたは家計と食事の両方を見るコーチです。以下の情報をもとに、来週の行動プランを3つ提案してください。` +
+    `効果の高さと実行しやすさの両方を考慮し、片方だけが高いものより両方バランスが良いものを優先してください。` +
+    `各施策について、どの費目にどれくらいの金額の変化が起きるかを必ず明示してください` +
+    `(例: 外食を2回自炊に置き換える → 夜外食を3000円減らし、自炊用食品を2000円増やす)。` +
+    `費目名は必ず次の一覧の表記のままいずれかを使い、一覧にない名前や独自の略称は使わないでください: ${categoryListText()}。` +
+    `金額はあくまで現時点での見立てで構いません。断定はせず、振り返りが積み重なるほど精度が上がっていく前提で構いません。` +
+    `特に「費目別の予算消化」で予算を超えそうな費目があれば、そこを改善する提案を優先してください。` +
+    `過去の振り返りで「難しかった」とされた傾向は避け、「できた」ものは強化する方向で考えてください。` +
+    `「絶対に守るルール」に反する提案は絶対に行わないでください。断定的な健康アドバイスは避けてください。\n\n` +
+    `情報: ${JSON.stringify(context)}\n\n` +
+    `出力はJSON形式のみ。前置き・コードブロック記号は書かないでください。\n` +
+    `出力形式:\n{"candidates":[{"title":"施策名(20字以内)","effect":"高|中|低","ease":"高|中|低","reason":"理由(50字以内)",` +
+    `"impacts":[{"category":"費目名(一覧の表記のまま)","delta":円(減少は負の数、増加は正の数)}]}]}` +
+    `※candidatesは3件、効果と実行しやすさのバランスが良い順。impactsは1〜3件程度で、費目名は一覧の表記と完全に一致させること。`;
+  const result = await callClaudeJSON(prompt, apiKey, 1200);
+  return result.candidates || [];
+}
+
+async function refinePlanCandidates(currentCandidates, comment, context, apiKey) {
+  const current = currentCandidates.map(({ title, effect, ease, reason, impacts }) => ({ title, effect, ease, reason, impacts }));
+  const prompt =
+    `以下は来週の行動プランの現在の提案です。ユーザーからのコメントを踏まえて、提案を微修正してください。` +
+    `コメントに関係ない案はそのまま残して構いません。全体を作り直す必要はありません。` +
+    `各案には引き続き、どの費目にどれくらいの金額の変化が起きるかを明示してください。` +
+    `費目名は必ず次の一覧の表記のままいずれかを使ってください: ${categoryListText()}。` +
+    `「絶対に守るルール」に反する内容には絶対にしないでください。断定的な健康アドバイスは避けてください。\n\n` +
+    `背景情報: ${JSON.stringify(context)}\n\n` +
+    `現在の提案: ${JSON.stringify(current)}\n\n` +
+    `ユーザーのコメント: 「${comment}」\n\n` +
+    `出力はJSON形式のみ。前置き・コードブロック記号は書かないでください。\n` +
+    `出力形式:\n{"candidates":[{"title":"施策名(20字以内)","effect":"高|中|低","ease":"高|中|低","reason":"理由(50字以内)",` +
+    `"impacts":[{"category":"費目名(一覧の表記のまま)","delta":円(減少は負の数、増加は正の数)}]}]}`;
+  const result = await callClaudeJSON(prompt, apiKey, 1200);
+  return result.candidates || [];
+}
+
+window.AI = { AIError, callClaude, callClaudeJSON, estimateNutrition, generatePlanCandidates, refinePlanCandidates };
+
+
+// ============================================================
+// app.js
+// ============================================================
+/**
+ * app.js — 統合ライフコーチ(スマホ版) v1.0.0
+ * すべてのデータは DB.*(IndexedDB)に保存され、この端末の中だけに残る。
+ */
+
+// ==================== ユーティリティ ====================
+
+function yen(n) {
+  const v = Math.round(Number(n) || 0);
+  return `¥${v.toLocaleString()}`;
+}
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 2600);
+}
+function el(html) {
+  const t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+function isoDate(d) {
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d - tz).toISOString().slice(0, 10);
+}
+function nextWeekDates() {
+  const today = new Date();
+  const offset = ((7 - today.getDay()) % 7) || 7;
+  const start = new Date(today);
+  start.setDate(today.getDate() + offset);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return d;
+  });
+}
+function formatDateLabel(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric", weekday: "short" });
+}
+function toneClass(level) {
+  return level === "高" ? "tag-strong" : level === "中" ? "tag-mid" : "tag-weak";
+}
+function impactChipsHTML(impacts) {
+  if (!impacts || !impacts.length) return "";
+  return impacts.map((imp) => {
+    const cls = imp.delta < 0 ? "impact-down" : "impact-up";
+    const sign = imp.delta > 0 ? "+" : "";
+    return `<span class="impact-chip ${cls}">${escapeHTML(imp.category)} ${sign}${Number(imp.delta).toLocaleString()}円</span>`;
+  }).join("");
+}
+function escapeHTML(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function heatColor(amount, max) {
+  const ratio = max > 0 ? Math.min(1, amount / max) : 0;
+  const from = [201, 222, 210], to = [30, 77, 59];
+  const rgb = from.map((f, i) => Math.round(f + (to[i] - f) * ratio));
+  return { bg: `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`, light: ratio <= 0.55 };
+}
+function prevMonthKey(monthKey) {
+  const [y, m] = monthKey.split("-").map(Number);
+  const py = m === 1 ? y - 1 : y;
+  const pm = m === 1 ? 12 : m - 1;
+  return `${py}-${String(pm).padStart(2, "0")}`;
+}
+
+// ==================== 初期化・週の巡回 ====================
+
+async function checkWeekRollover() {
+  const storedStart = await DB.kvGet("scheduleWeekStart");
+  if (!storedStart) {
+    const nd = nextWeekDates();
+    const schedule = nd.map((d) => ({ date: isoDate(d), type: "", cookOk: true, lateHome: false, drink: false, special: false }));
+    await DB.kvSet("schedule", schedule);
+    await DB.kvSet("scheduleWeekStart", isoDate(nd[0]));
+    return;
+  }
+  const startD = new Date(storedStart + "T00:00:00");
+  const endD = new Date(startD);
+  endD.setDate(startD.getDate() + 6);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (today > endD) {
+    // 保管していた「来週の予定」の週がもう終わっている → 振り返り対象へ回し、次の週を用意する
+    const committed = (await DB.kvGet("committedWeek")) || [];
+    if (committed.length) {
+      const existingPast = (await DB.kvGet("pastCommits")) || [];
+      const moved = committed.map((c) => ({ ...c, status: null }));
+      await DB.kvSet("pastCommits", [...existingPast, ...moved]);
+      await DB.kvSet("committedWeek", []);
+    }
+    const nd = nextWeekDates();
+    const schedule = nd.map((d) => ({ date: isoDate(d), type: "", cookOk: true, lateHome: false, drink: false, special: false }));
+    await DB.kvSet("schedule", schedule);
+    await DB.kvSet("scheduleWeekStart", isoDate(nd[0]));
+    await DB.kvSet("planCandidates", []);
+  }
+}
+
+// ==================== タブ切り替え ====================
+
+const RENDERERS = {
+  home: renderHome,
+  budget: renderBudget,
+  meal: renderMeal,
+  plan: renderPlan,
+  settings: renderSettings,
+};
+
+async function switchTab(name) {
+  document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+  document.querySelectorAll(".bottom-nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  const view = document.getElementById(`view-${name}`);
+  view.classList.add("active");
+  await RENDERERS[name](view);
+}
+
+// ==================== ホーム ====================
+
+async function renderHome(container) {
+  const monthKey = DB.monthKeyOf(DB.todayISO());
+  const [expenses, incomes, meals, goals, apiKey] = await Promise.all([
+    DB.getByMonth("expenses", monthKey), DB.getByMonth("incomes", monthKey),
+    DB.getByDate("meals", DB.todayISO()), DB.kvGet("goals"), DB.kvGet("apiKey"),
+  ]);
+  const fixedCosts = await DB.kvGet("fixedCosts");
+  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+  const totalSavings = expenses.filter((e) => e.category === "貯金").reduce((s, e) => s + e.amount, 0);
+  const totalFixed = fixedCosts.reduce((s, f) => s + f.amount, 0);
+  const totalVariable = expenses.filter((e) => e.category !== "貯金").reduce((s, e) => s + e.amount, 0);
+  const leftover = totalIncome - totalFixed - totalVariable - totalSavings;
+  const savingsPct = goals.savingsTarget > 0 ? Math.round((totalSavings / goals.savingsTarget) * 100) : 0;
+
+  const todayExpenses = await DB.getByDate("expenses", DB.todayISO());
+  const timelineItems = [
+    ...meals.map((m) => ({ ...m, _type: "meal" })),
+    ...todayExpenses.map((e) => ({ ...e, _type: "expense" })),
+  ].sort((a, b) => b.createdAt - a.createdAt);
+
+  const actualProtein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const actualFat = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
+  const actualCarbs = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
+  const targetProteinG = Math.round((goals.targetKcal * goals.proteinRatio) / 100 / 4);
+  const targetFatG = Math.round((goals.targetKcal * goals.fatRatio) / 100 / 9);
+  const targetCarbsG = Math.round((goals.targetKcal * goals.carbsRatio) / 100 / 4);
+
+  container.innerHTML = `
+    ${!apiKey ? `<div class="card" style="border-color:var(--gold)"><p class="muted" style="color:var(--gold);font-weight:700;margin:0 0 4px">はじめに</p><p class="muted" style="margin:0">AIによる栄養計算・プラン提案を使うには、設定タブでAnthropicのAPIキーを入力してください。入力しなくても記録・閲覧は使えます。</p></div>` : ""}
+    <div class="card-hero">
+      <p class="muted" style="color:var(--pale);margin:0 0 4px">今月の貯金(目標 ${yen(goals.savingsTarget)})</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+        <p style="font-family:var(--serif);font-size:28px;font-weight:700;margin:0">${yen(totalSavings)}</p>
+        <p style="font-weight:700;color:var(--pale);margin:0">${savingsPct}%</p>
+      </div>
+      <div class="progress-track on-hero"><div class="progress-fill on-hero" style="width:${Math.min(100, savingsPct)}%"></div></div>
+      <p class="muted" style="color:var(--pale);margin:8px 0 0">今月の余剰 ${leftover >= 0 ? "+" : ""}${yen(leftover)}</p>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="btn btn-green" id="btn-go-meal">食事を記録</button>
+      <button class="btn btn-red" id="btn-go-expense">支出を記録</button>
+    </div>
+    <button class="btn btn-outline btn-sm" id="btn-go-income" style="margin-bottom:18px">収入を記録する</button>
+
+    ${meals.length ? `
+    <div class="card">
+      <p class="muted" style="font-weight:700;margin:0 0 8px">今日のPFC</p>
+      ${progressRowHTML("たんぱく質", actualProtein, targetProteinG, "g")}
+      ${progressRowHTML("脂質", actualFat, targetFatG, "g")}
+      ${progressRowHTML("炭水化物", actualCarbs, targetCarbsG, "g")}
+    </div>` : ""}
+
+    <p class="muted" style="font-weight:700;margin:0 0 8px">今日の記録</p>
+    ${timelineItems.length === 0
+      ? `<p class="muted" style="text-align:center;padding:24px 0">まだ記録がありません。上のボタンから始めてみてください。</p>`
+      : timelineItems.map((item) => `
+        <div class="timeline-row">
+          <div class="stamp" style="width:30px;height:30px;font-size:11px">${item._type === "meal" ? "食" : "¥"}</div>
+          <div class="body">
+            <p class="title">${escapeHTML(item._type === "meal" ? item.text : item.category)}</p>
+            <p class="muted-sm">${new Date(item.createdAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</p>
+          </div>
+          ${item._type === "expense" ? `<p class="amount">${yen(item.amount)}</p>` : ""}
+        </div>
+      `).join("")}
+  `;
+
+  container.querySelector("#btn-go-meal").onclick = () => switchTab("meal");
+  container.querySelector("#btn-go-expense").onclick = () => switchTab("budget");
+  container.querySelector("#btn-go-income").onclick = async () => {
+    await switchTab("budget");
+    document.querySelector("#budget-mode-income")?.click();
+  };
+}
+
+function progressRowHTML(label, actual, target, unit, badWhenOver) {
+  const pct = target > 0 ? Math.round((actual / target) * 100) : 0;
+  const over = target > 0 && actual > target * 1.15;
+  return `
+    <div class="progress-row">
+      <div class="progress-labels"><span>${label}</span><span class="muted">${Math.round(actual).toLocaleString()}${unit} / ${Math.round(target).toLocaleString()}${unit}</span></div>
+      <div class="progress-track"><div class="progress-fill ${badWhenOver && over ? "bad" : ""}" style="width:${Math.min(100, pct)}%"></div></div>
+    </div>`;
+}
+
+// ==================== 家計 ====================
+
+let budgetView = "entry";
+let budgetMode = "expense";
+let selectedCategory = null;
+let selectedDay = new Date().getDate();
+
+async function renderBudget(container) {
+  container.innerHTML = `
+    <div class="seg" id="budget-seg">
+      <button data-v="entry">記録</button><button data-v="monthly">月次</button>
+      <button data-v="budget">予算</button><button data-v="yearly">年次</button>
+    </div>
+    <div id="budget-body"></div>
+  `;
+  container.querySelectorAll("#budget-seg button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.v === budgetView);
+    b.onclick = () => { budgetView = b.dataset.v; renderBudget(container); };
+  });
+  const body = container.querySelector("#budget-body");
+  if (budgetView === "entry") await renderBudgetEntry(body);
+  else if (budgetView === "monthly") await renderBudgetMonthly(body);
+  else if (budgetView === "budget") await renderBudgetSetting(body);
+  else await renderBudgetYearly(body);
+}
+
+async function renderBudgetEntry(body) {
+  const monthKey = DB.monthKeyOf(DB.todayISO());
+  const [expenses, incomes, fixedCosts] = await Promise.all([
+    DB.getByMonth("expenses", monthKey), DB.getByMonth("incomes", monthKey), DB.kvGet("fixedCosts"),
+  ]);
+  const fixedCats = new Set(fixedCosts.map((f) => f.category));
+
+  body.innerHTML = `
+    <div class="seg accent" id="mode-seg">
+      <button data-v="expense" id="budget-mode-expense">支出</button>
+      <button data-v="income" id="budget-mode-income">収入</button>
+    </div>
+    <div id="mode-body"></div>
+  `;
+  body.querySelectorAll("#mode-seg button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.v === budgetMode);
+    b.onclick = () => { budgetMode = b.dataset.v; renderBudgetEntry(body); };
+  });
+  const modeBody = body.querySelector("#mode-body");
+
+  if (budgetMode === "expense") {
+    modeBody.innerHTML = `
+      <div class="chip-row">
+        ${APP_DATA.MAIN_CATEGORIES.map((c) => `<button class="chip" data-c="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join("")}
+      </div>
+      <input type="number" inputmode="numeric" id="exp-amount" placeholder="金額" style="margin-bottom:10px;font-size:18px">
+      <input type="text" id="exp-memo" placeholder="メモ(任意)" style="margin-bottom:12px">
+      <button class="btn btn-red" id="exp-save">記録する</button>
+      <p class="muted-sm" id="exp-fixed-note" style="margin-top:8px"></p>
+      <div id="exp-list" style="margin-top:18px"></div>
+    `;
+    const chips = modeBody.querySelectorAll(".chip");
+    chips.forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.c === selectedCategory);
+      chip.onclick = () => {
+        selectedCategory = chip.dataset.c;
+        chips.forEach((c2) => c2.classList.toggle("active", c2 === chip));
+        modeBody.querySelector("#exp-fixed-note").textContent = fixedCats.has(selectedCategory)
+          ? `※${selectedCategory}は定例固定費として毎月自動計算に含まれています。今回は臨時分として追加で記録されます。` : "";
+      };
+    });
+    const listEl = modeBody.querySelector("#exp-list");
+    if (expenses.length) {
+      listEl.innerHTML = `<p class="muted" style="font-weight:700;margin:0 0 8px">今月の支出(記録分)</p>` +
+        expenses.map((e) => `
+          <div class="row"><div><p style="margin:0;font-size:13px">${escapeHTML(e.category)}${e.memo ? " ・ " + escapeHTML(e.memo) : ""}</p><p class="muted-sm" style="margin:2px 0 0">${e.dateISO}</p></div><span class="amount">${yen(e.amount)}</span></div>
+        `).join("");
+    }
+    modeBody.querySelector("#exp-save").onclick = async () => {
+      const amount = Number(modeBody.querySelector("#exp-amount").value);
+      if (!selectedCategory || !amount) return toast("費目と金額を入力してください");
+      await DB.addExpense({ category: selectedCategory, amount, memo: modeBody.querySelector("#exp-memo").value });
+      toast("記録しました");
+      selectedCategory = null;
+      renderBudgetEntry(body);
+    };
+  } else {
+    modeBody.innerHTML = `
+      <div class="chip-row">
+        ${APP_DATA.INCOME_LABELS.map((l, i) => `<button class="chip income-chip ${i === 0 ? "active" : ""}" data-l="${escapeHTML(l)}">${escapeHTML(l)}</button>`).join("")}
+      </div>
+      <input type="number" inputmode="numeric" id="inc-amount" placeholder="金額" style="margin-bottom:12px;font-size:18px">
+      <button class="btn btn-green" id="inc-save">記録する</button>
+      <div id="inc-list" style="margin-top:18px"></div>
+    `;
+    let incomeLabel = APP_DATA.INCOME_LABELS[0];
+    const incChips = modeBody.querySelectorAll(".income-chip");
+    incChips.forEach((chip) => chip.onclick = () => { incomeLabel = chip.dataset.l; incChips.forEach((c2) => c2.classList.toggle("active", c2 === chip)); });
+    const listEl = modeBody.querySelector("#inc-list");
+    if (incomes.length) {
+      listEl.innerHTML = `<p class="muted" style="font-weight:700;margin:0 0 8px">今月の収入</p>` +
+        incomes.map((inc) => `<div class="row"><p style="margin:0;font-size:13px">${escapeHTML(inc.label)}</p><span class="amount">${yen(inc.amount)}</span></div>`).join("");
+    }
+    modeBody.querySelector("#inc-save").onclick = async () => {
+      const amount = Number(modeBody.querySelector("#inc-amount").value);
+      if (!amount) return toast("金額を入力してください");
+      await DB.addIncome({ label: incomeLabel, amount });
+      toast("記録しました");
+      renderBudgetEntry(body);
+    };
+  }
+}
+
+async function renderBudgetMonthly(body) {
+  const monthKey = DB.monthKeyOf(DB.todayISO());
+  const monthLabel = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long" });
+  const [expenses, incomes, fixedCosts, goals, categoryBudgets, committedWeek] = await Promise.all([
+    DB.getByMonth("expenses", monthKey), DB.getByMonth("incomes", monthKey), DB.kvGet("fixedCosts"),
+    DB.kvGet("goals"), DB.kvGet("categoryBudgets"), DB.kvGet("committedWeek"),
+  ]);
+  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+  const totalSavings = expenses.filter((e) => e.category === "貯金").reduce((s, e) => s + e.amount, 0);
+  const totalFixed = fixedCosts.reduce((s, f) => s + f.amount, 0);
+  const totalVariable = expenses.filter((e) => e.category !== "貯金").reduce((s, e) => s + e.amount, 0);
+  const leftover = totalIncome - totalFixed - totalVariable - totalSavings;
+  const savingsPct = goals.savingsTarget > 0 ? Math.round((totalSavings / goals.savingsTarget) * 100) : 0;
+
+  const committedCats = new Set(committedWeek.flatMap((c) => (c.impacts || []).map((i) => i.category)));
+  const budgetedCats = Object.keys(categoryBudgets).filter((c) => categoryBudgets[c] > 0)
+    .sort((a, b) => (committedCats.has(a) ? 0 : 1) - (committedCats.has(b) ? 0 : 1));
+
+  const dayTotals = {};
+  expenses.filter((e) => e.category !== "貯金").forEach((e) => {
+    const day = Number(e.dateISO.slice(8, 10));
+    dayTotals[day] = (dayTotals[day] || 0) + e.amount;
+  });
+  const maxDay = Math.max(1, ...Object.values(dayTotals));
+  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+  const todayDate = new Date().getDate();
+
+  body.innerHTML = `
+    <div class="card-hero">
+      <p class="muted" style="color:var(--pale);margin:0 0 4px">今月の貯金目標</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+        <p style="font-family:var(--serif);font-size:28px;font-weight:700;margin:0">${yen(totalSavings)}</p>
+        <p style="color:var(--pale);margin:0">/ ${yen(goals.savingsTarget)}</p>
+      </div>
+      <div class="progress-track on-hero"><div class="progress-fill on-hero" style="width:${Math.min(100, savingsPct)}%"></div></div>
+      <p class="muted" style="color:var(--pale);margin:8px 0 0">達成率 ${savingsPct}%</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">${monthLabel}の収支</p>
+      <div style="font-size:13px;margin-bottom:10px">
+        <div class="progress-labels"><span class="muted">収入</span><span>${yen(totalIncome)}</span></div>
+        <div class="progress-labels"><span class="muted">固定費</span><span>${yen(totalFixed)}</span></div>
+        <div class="progress-labels"><span class="muted">変動費</span><span>${yen(totalVariable)}</span></div>
+        <div class="progress-labels"><span class="muted">貯金</span><span>${yen(totalSavings)}</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--rule)">
+        <span style="font-weight:700;font-size:13px">今月の余剰</span>
+        <span style="font-family:var(--serif);font-size:18px;font-weight:700;color:${leftover >= 0 ? "var(--green)" : "var(--red)"}">${leftover >= 0 ? "+" : ""}${yen(leftover)}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">費目別の予算消化率</p>
+      ${budgetedCats.length === 0
+        ? `<p class="muted" style="text-align:center;padding:10px 0">「予算」タブで来月の予算を費目ごとに決めると、ここに消化率が表示されます。</p>`
+        : budgetedCats.map((c) => {
+            const budget = categoryBudgets[c] || 0;
+            const actual = expenses.filter((e) => e.category === c).reduce((s, e) => s + e.amount, 0);
+            const pct = budget > 0 ? Math.round((actual / budget) * 100) : 0;
+            const isCommitted = committedCats.has(c);
+            const barColor = pct >= 100 ? "var(--red)" : isCommitted ? "var(--gold)" : "var(--green)";
+            return `
+              <div class="progress-row">
+                <div class="progress-labels">
+                  <span>${escapeHTML(c)} ${isCommitted ? `<span class="tag tag-strong">コミット中</span>` : ""}</span>
+                  <span style="font-weight:700;color:${pct >= 100 ? "var(--red)" : "var(--muted)"}">${pct}%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct)}%;background:${barColor}"></div></div>
+                <p class="muted-sm" style="margin:2px 0 0">${yen(actual)} / ${yen(budget)}</p>
+              </div>`;
+          }).join("")}
+    </div>
+
+    <p class="muted" style="font-weight:700;margin:0 0 8px">${monthLabel}のカレンダー(変動費)</p>
+    <div class="calendar-grid" id="cal-grid"></div>
+    <div class="card" id="day-detail"></div>
+  `;
+
+  const grid = body.querySelector("#cal-grid");
+  for (let d = 1; d <= daysInMonth; d++) {
+    const amt = dayTotals[d] || 0;
+    const { bg, light } = heatColor(amt, maxDay);
+    const cell = el(`<button class="calendar-cell ${d === todayDate ? "today" : ""} ${d === selectedDay ? "selected" : ""}" style="background:${bg};color:${light ? "var(--ink)" : "#fff"}">${d}</button>`);
+    cell.onclick = () => { selectedDay = d; renderBudgetMonthly(body); };
+    grid.appendChild(cell);
+  }
+
+  const detail = body.querySelector("#day-detail");
+  const dayExpenses = expenses.filter((e) => e.category !== "貯金" && Number(e.dateISO.slice(8, 10)) === selectedDay);
+  detail.innerHTML = `<p class="muted-sm" style="margin:0 0 6px">${selectedDay}日</p>` +
+    (dayExpenses.length === 0
+      ? `<p class="muted-sm" style="margin:0">記録がありません。</p>`
+      : dayExpenses.map((e) => `<div class="progress-labels"><span>${escapeHTML(e.category)}</span><span style="color:var(--green)">${yen(e.amount)}</span></div>`).join(""));
+}
+
+async function renderBudgetSetting(body) {
+  const monthKey = DB.monthKeyOf(DB.todayISO());
+  const pmKey = prevMonthKey(monthKey);
+  const [fixedCosts, categoryBudgets, prevExpenses] = await Promise.all([
+    DB.kvGet("fixedCosts"), DB.kvGet("categoryBudgets"), DB.getByMonth("expenses", pmKey),
+  ]);
+  const fixedCats = new Set(fixedCosts.map((f) => f.category));
+  const budgetable = APP_DATA.MAIN_CATEGORIES.filter((c) => c !== "貯金" && !fixedCats.has(c));
+  const prevTotals = {};
+  prevExpenses.forEach((e) => { prevTotals[e.category] = (prevTotals[e.category] || 0) + e.amount; });
+  const hasPrevData = prevExpenses.length > 0;
+
+  body.innerHTML = `
+    <p class="muted" style="margin:0 0 12px">${hasPrevData ? "先月の実績を参考に、来月の予算を費目ごとに決めておくと、月次タブで消化率を確認できます。" : "先月のデータはまだありません。まずは目安の金額で決めておき、来月以降は実績を参考に調整できます。"}固定費として登録した費目はここには出ません。</p>
+    ${budgetable.map((c) => `
+      <div class="row" style="align-items:center">
+        <div><p style="margin:0;font-size:13px">${escapeHTML(c)}</p><p class="muted-sm" style="margin:2px 0 0">先月 ${hasPrevData ? yen(prevTotals[c] || 0) : "データなし"}</p></div>
+        <input type="number" data-c="${escapeHTML(c)}" class="budget-input" value="${categoryBudgets[c] || ""}" placeholder="予算" style="width:100px;text-align:right">
+      </div>
+    `).join("")}
+  `;
+  body.querySelectorAll(".budget-input").forEach((input) => {
+    input.onchange = async () => {
+      const budgets = await DB.kvGet("categoryBudgets");
+      budgets[input.dataset.c] = Number(input.value) || 0;
+      await DB.kvSet("categoryBudgets", budgets);
+      toast("予算を保存しました");
+    };
+  });
+}
+
+async function renderBudgetYearly(body) {
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const mk = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const rows = await DB.getByMonth("expenses", mk);
+    const variable = rows.filter((r) => r.category !== "貯金").reduce((s, r) => s + r.amount, 0);
+    months.push({ label: `${d.getMonth() + 1}月`, variable, isCurrent: i === 0 });
+  }
+  const maxAmt = Math.max(1, ...months.map((m) => m.variable));
+  body.innerHTML = `
+    <p class="muted" style="margin:0 0 10px">直近12か月の変動費(固定費は含みません)</p>
+    <div class="year-bars">
+      ${months.map((m) => {
+        const h = Math.max(4, Math.round((m.variable / maxAmt) * 130));
+        return `<div class="year-bar-col"><div class="year-bar ${m.isCurrent ? "current" : ""}" style="height:${h}px"></div><p class="muted-sm" style="margin:4px 0 0">${m.label}</p></div>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+// ==================== 食事 ====================
+
+let mealText = "";
+let mealResult = null;
+
+async function renderMeal(container) {
+  const goals = await DB.kvGet("goals");
+  const meals = await DB.getByDate("meals", DB.todayISO());
+  const actualKcal = meals.reduce((s, m) => s + (Number(m.kcal) || 0), 0);
+  const actualProtein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const actualFat = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
+  const actualCarbs = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
+  const targetProteinG = Math.round((goals.targetKcal * goals.proteinRatio) / 100 / 4);
+  const targetFatG = Math.round((goals.targetKcal * goals.fatRatio) / 100 / 9);
+  const targetCarbsG = Math.round((goals.targetKcal * goals.carbsRatio) / 100 / 4);
+  const ratioSum = goals.proteinRatio + goals.fatRatio + goals.carbsRatio;
+
+  container.innerHTML = `
+    <p style="font-weight:700;margin:0 0 8px">何を食べましたか？</p>
+    <textarea id="meal-text" rows="2" placeholder="例: 鶏むね肉のソテーとご飯、味噌汁" style="margin-bottom:10px">${escapeHTML(mealText)}</textarea>
+    <button class="btn btn-green" id="meal-estimate" style="margin-bottom:14px">栄養を計算する</button>
+    <div id="meal-error"></div>
+    <div id="meal-result"></div>
+    <div class="card">
+      <p class="muted" style="font-weight:700;margin:0 0 8px">今日の達成度(目標比)</p>
+      ${progressRowHTML("エネルギー", actualKcal, goals.targetKcal, "kcal", true)}
+      ${progressRowHTML("たんぱく質", actualProtein, targetProteinG, "g", true)}
+      ${progressRowHTML("脂質", actualFat, targetFatG, "g", true)}
+      ${progressRowHTML("炭水化物", actualCarbs, targetCarbsG, "g", true)}
+      ${ratioSum !== 100 ? `<p class="issue">設定タブのPFC比率の合計が100%になっていません(${ratioSum}%)</p>` : ""}
+    </div>
+    ${meals.length ? `<p class="muted" style="font-weight:700;margin:0 0 8px">今日の食事記録</p>` + meals.map((m) => `
+      <div class="card" style="padding:12px">
+        <div class="progress-labels"><span style="font-size:13px">${escapeHTML(m.text)}</span><span class="muted-sm">${new Date(m.createdAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}</span></div>
+        <p class="muted-sm" style="color:var(--green);margin:4px 0 0">${m.kcal}kcal ・ P${m.protein} F${m.fat} C${m.carbs}</p>
+      </div>`).join("") : ""}
+    <p class="muted-sm" style="margin-top:10px">栄養値はAIによる概算です。医療判断には使用しないでください。</p>
+  `;
+
+  container.querySelector("#meal-text").oninput = (e) => { mealText = e.target.value; };
+
+  container.querySelector("#meal-estimate").onclick = async () => {
+    if (!mealText.trim()) return toast("食べたものを入力してください");
+    const btn = container.querySelector("#meal-estimate");
+    btn.disabled = true; btn.textContent = "計算中…";
+    container.querySelector("#meal-error").innerHTML = "";
+    try {
+      const apiKey = await DB.kvGet("apiKey");
+      mealResult = await AI.estimateNutrition(mealText, apiKey);
+      renderMealResult(container);
+    } catch (e) {
+      container.querySelector("#meal-error").innerHTML = `<p class="issue">${escapeHTML(e.message)}</p>`;
+    }
+    btn.disabled = false; btn.textContent = "栄養を計算する";
+  };
+}
+
+function renderMealResult(container) {
+  const box = container.querySelector("#meal-result");
+  if (!mealResult) { box.innerHTML = ""; return; }
+  box.innerHTML = `
+    <div class="card">
+      <span class="tag tag-mid" style="margin-bottom:10px;display:inline-block">AI概算</span>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:10px">
+        ${[["kcal", "kcal"], ["protein", "たんぱく質g"], ["fat", "脂質g"], ["carbs", "炭水化物g"]].map(([k, label]) => `
+          <div><p style="font-family:var(--serif);font-size:17px;font-weight:700;color:var(--green);margin:0">${mealResult[k] ?? "—"}</p><p class="muted-sm" style="margin:2px 0 0">${label}</p></div>
+        `).join("")}
+      </div>
+      ${mealResult.note ? `<p class="muted-sm" style="margin:0 0 10px">${escapeHTML(mealResult.note)}</p>` : ""}
+      <button class="btn btn-red btn-sm" id="meal-save">この内容で記録する</button>
+    </div>
+  `;
+  box.querySelector("#meal-save").onclick = async () => {
+    await DB.addMeal({ text: mealText, ...mealResult });
+    mealText = ""; mealResult = null;
+    toast("記録しました");
+    renderMeal(container.closest(".view"));
+  };
+}
+
+// ==================== プラン ====================
+
+let planView = "propose";
+let refineComment = "";
+
+async function renderPlan(container) {
+  container.innerHTML = `
+    <div class="seg" id="plan-seg">
+      <button data-v="schedule">予定</button><button data-v="propose">提案</button><button data-v="review">振り返り</button>
+    </div>
+    <div id="plan-body"></div>
+  `;
+  container.querySelectorAll("#plan-seg button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.v === planView);
+    b.onclick = () => { planView = b.dataset.v; renderPlan(container); };
+  });
+  const body = container.querySelector("#plan-body");
+  if (planView === "schedule") await renderPlanSchedule(body);
+  else if (planView === "propose") await renderPlanPropose(body);
+  else await renderPlanReview(body);
+}
+
+async function renderPlanSchedule(body) {
+  const schedule = await DB.kvGet("schedule");
+  body.innerHTML = `
+    <p class="muted" style="margin:0 0 10px">来週の予定を入れておくと、提案がより具体的になります。</p>
+    ${schedule.map((s, i) => `
+      <div class="schedule-row" data-i="${i}">
+        <div class="top">
+          <span class="date-label">${formatDateLabel(s.date)}</span>
+          <select class="sched-type">
+            <option value="">予定なし</option>
+            ${APP_DATA.SCHEDULE_TYPES.map((t) => `<option value="${escapeHTML(t)}" ${t === s.type ? "selected" : ""}>${escapeHTML(t)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="chip-row" style="margin-bottom:0">
+          <button class="chip sched-toggle ${s.cookOk ? "active" : ""}" data-k="cookOk">自炊可</button>
+          <button class="chip sched-toggle ${s.lateHome ? "active" : ""}" data-k="lateHome">遅帰宅</button>
+          <button class="chip sched-toggle ${s.drink ? "active" : ""}" data-k="drink">飲酒</button>
+          <button class="chip sched-toggle ${s.special ? "active" : ""}" data-k="special">特別</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+  body.querySelectorAll(".schedule-row").forEach((row) => {
+    const i = Number(row.dataset.i);
+    row.querySelector(".sched-type").onchange = async (e) => {
+      const sc = await DB.kvGet("schedule"); sc[i].type = e.target.value; await DB.kvSet("schedule", sc);
+    };
+    row.querySelectorAll(".sched-toggle").forEach((btn) => {
+      btn.onclick = async () => {
+        const sc = await DB.kvGet("schedule");
+        const key = btn.dataset.k;
+        sc[i][key] = !sc[i][key];
+        await DB.kvSet("schedule", sc);
+        btn.classList.toggle("active", sc[i][key]);
+      };
+    });
+  });
+}
+
+async function buildPlanContext() {
+  const [schedule, meals, goals, expenses, incomes, fixedCosts, categoryBudgets, feedbackLog, profile] = await Promise.all([
+    DB.kvGet("schedule"), DB.getByMonth("meals", DB.monthKeyOf(DB.todayISO())), DB.kvGet("goals"),
+    DB.getByMonth("expenses", DB.monthKeyOf(DB.todayISO())), DB.getByMonth("incomes", DB.monthKeyOf(DB.todayISO())),
+    DB.kvGet("fixedCosts"), DB.kvGet("categoryBudgets"), DB.kvGet("feedbackLog"), DB.kvGet("profile"),
+  ]);
+  const todayMeals = await DB.getByDate("meals", DB.todayISO());
+  const actualKcal = todayMeals.reduce((s, m) => s + (Number(m.kcal) || 0), 0);
+  const actualProtein = todayMeals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const targetProteinG = Math.round((goals.targetKcal * goals.proteinRatio) / 100 / 4);
+  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+  const totalSavings = expenses.filter((e) => e.category === "貯金").reduce((s, e) => s + e.amount, 0);
+  const totalFixed = fixedCosts.reduce((s, f) => s + f.amount, 0);
+  const totalVariable = expenses.filter((e) => e.category !== "貯金").reduce((s, e) => s + e.amount, 0);
+  const leftover = totalIncome - totalFixed - totalVariable - totalSavings;
+  const budgetSummary = Object.keys(categoryBudgets).filter((c) => categoryBudgets[c] > 0).map((c) => ({
+    費目: c, 予算: categoryBudgets[c], 実績: expenses.filter((e) => e.category === c).reduce((s, e) => s + e.amount, 0),
+  }));
+  return {
+    来週の予定: schedule.map((s) => ({ 日: formatDateLabel(s.date), 予定: s.type || "なし", 自炊可: s.cookOk, 遅帰宅: s.lateHome, 飲酒: s.drink, 特別: s.special })),
+    今週の食事: { 記録数: todayMeals.length, 実績kcal: actualKcal, 目標kcal: goals.targetKcal, 実績たんぱく質: actualProtein, 目標たんぱく質: targetProteinG },
+    今月の収支: { 収入: totalIncome, 固定費: totalFixed, 変動費: totalVariable, 貯金: totalSavings, 貯金目標: goals.savingsTarget, 余剰: leftover },
+    費目別の予算消化: budgetSummary,
+    過去の振り返り: feedbackLog,
+    絶対に守るルール: profile.rules || "特になし",
+  };
+}
+
+async function renderPlanPropose(body) {
+  const candidates = await DB.kvGet("planCandidates");
+  body.innerHTML = `
+    <button class="btn btn-green" id="plan-generate" style="margin-bottom:12px">${candidates.length ? "提案をゼロから作り直す" : "来週のプランを作る"}</button>
+    <div id="plan-error"></div>
+    <div id="plan-candidates"></div>
+  `;
+  renderCandidateList(body, candidates);
+
+  body.querySelector("#plan-generate").onclick = async () => {
+    const btn = body.querySelector("#plan-generate");
+    btn.disabled = true; btn.textContent = "考え中…";
+    body.querySelector("#plan-error").innerHTML = "";
+    try {
+      const apiKey = await DB.kvGet("apiKey");
+      const context = await buildPlanContext();
+      const result = await AI.generatePlanCandidates(context, apiKey);
+      const withIds = result.map((c) => ({ ...c, id: Date.now() + Math.random(), committed: false }));
+      await DB.kvSet("planCandidates", withIds);
+      refineComment = "";
+      renderCandidateList(body, withIds);
+      toast("提案を作りました");
+    } catch (e) {
+      body.querySelector("#plan-error").innerHTML = `<p class="issue">${escapeHTML(e.message)}</p>`;
+    }
+    btn.disabled = false; btn.textContent = "提案をゼロから作り直す";
+  };
+}
+
+function renderCandidateList(body, candidates) {
+  const box = body.querySelector("#plan-candidates");
+  if (!candidates.length) {
+    box.innerHTML = `<div class="empty-box"><span>予定・食事・支出・予算・プロフィールを記録してから作ると、より具体的な提案になります。</span></div>`;
+    return;
+  }
+  box.innerHTML = candidates.map((c) => `
+    <label class="candidate ${c.committed ? "committed" : ""}" data-id="${c.id}">
+      <div class="top">
+        <input type="checkbox" class="commit-box" ${c.committed ? "checked" : ""}>
+        <div style="flex:1">
+          <p class="title">${c.committed ? "✓ " : ""}${escapeHTML(c.title)}</p>
+          <div style="margin-bottom:6px">
+            <span class="tag ${toneClass(c.effect)}">効果:${c.effect}</span>
+            <span class="tag ${toneClass(c.ease)}">実行:${c.ease}</span>
+          </div>
+          <div>${impactChipsHTML(c.impacts)}</div>
+          <p class="reason">${escapeHTML(c.reason)}</p>
+        </div>
+      </div>
+    </label>
+  `).join("") + `
+    <div class="card">
+      <p style="font-weight:700;margin:0 0 6px">コメントで微修正する</p>
+      <p class="muted" style="margin:0 0 8px">気になる点をそのまま書いてください。コメントと関係ない案はそのまま残ります。</p>
+      <textarea id="refine-text" rows="2" placeholder="例: もっと簡単なものにして。自炊系の提案をもう1つ増やして。" style="margin-bottom:8px">${escapeHTML(refineComment)}</textarea>
+      <button class="btn btn-gold" id="refine-btn">このコメントで作り直す</button>
+      <div id="refine-error"></div>
+    </div>
+    <button class="btn btn-red" id="commit-btn">チェックした内容でコミットする</button>
+  `;
+
+  box.querySelectorAll(".commit-box").forEach((cb) => {
+    cb.onchange = async () => {
+      const cands = await DB.kvGet("planCandidates");
+      const idx = cands.findIndex((c) => String(c.id) === String(cb.closest(".candidate").dataset.id));
+      if (idx >= 0) { cands[idx].committed = cb.checked; await DB.kvSet("planCandidates", cands); }
+      cb.closest(".candidate").classList.toggle("committed", cb.checked);
+    };
+  });
+
+  box.querySelector("#refine-text").oninput = (e) => { refineComment = e.target.value; };
+  box.querySelector("#refine-btn").onclick = async () => {
+    if (!refineComment.trim()) return toast("コメントを入力してください");
+    const btn = box.querySelector("#refine-btn");
+    btn.disabled = true; btn.textContent = "反映中…";
+    box.querySelector("#refine-error").innerHTML = "";
+    try {
+      const apiKey = await DB.kvGet("apiKey");
+      const current = await DB.kvGet("planCandidates");
+      const context = await buildPlanContext();
+      const result = await AI.refinePlanCandidates(current, refineComment, context, apiKey);
+      const withIds = result.map((c) => ({ ...c, id: Date.now() + Math.random(), committed: false }));
+      await DB.kvSet("planCandidates", withIds);
+      refineComment = "";
+      renderCandidateList(body, withIds);
+      toast("コメントを反映しました");
+    } catch (e) {
+      box.querySelector("#refine-error").innerHTML = `<p class="issue">${escapeHTML(e.message)}</p>`;
+    }
+    btn.disabled = false; btn.textContent = "このコメントで作り直す";
+  };
+
+  box.querySelector("#commit-btn").onclick = async () => {
+    const cands = await DB.kvGet("planCandidates");
+    const chosen = cands.filter((c) => c.committed);
+    if (!chosen.length) return toast("チェックした案がありません");
+    await DB.kvSet("committedWeek", chosen);
+    toast("コミットしました。来週、一緒に振り返りましょう");
+  };
+}
+
+async function renderPlanReview(body) {
+  const [pastCommits, committedWeek] = await Promise.all([DB.kvGet("pastCommits"), DB.kvGet("committedWeek")]);
+  body.innerHTML = `
+    <p style="font-weight:700;margin:0 0 4px">先週コミットしたこと</p>
+    <p class="muted" style="margin:0 0 14px">ここでの回答が、次回のプラン生成に反映されます。想定していた費目・金額も一緒に記録されるので、振り返りを重ねるほど見立ての精度が上がっていきます。</p>
+    <div id="past-commits">
+      ${pastCommits.length === 0
+        ? `<div class="empty-box"><span>まだ振り返る項目がありません。プランをコミットして1週間過ごすと、ここに表示されます。</span></div>`
+        : pastCommits.map((p, i) => `
+          <div class="card" data-i="${i}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              ${p.status ? `<div class="stamp" style="width:26px;height:26px;font-size:10px">${p.status === "done" ? "済" : p.status === "partial" ? "半" : "難"}</div>` : ""}
+              <p style="margin:0;font-size:13px">${escapeHTML(p.title)}</p>
+            </div>
+            <div>${impactChipsHTML(p.impacts)}</div>
+            <div class="btn-row" style="grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">
+              <button class="btn ${p.status === "done" ? "btn-green" : "btn-outline"} btn-sm reflect-btn" data-status="done">できた</button>
+              <button class="btn ${p.status === "partial" ? "btn-gold" : "btn-outline"} btn-sm reflect-btn" data-status="partial">一部できた</button>
+              <button class="btn ${p.status === "hard" ? "btn-red" : "btn-outline"} btn-sm reflect-btn" data-status="hard">難しかった</button>
+            </div>
+          </div>
+        `).join("")}
+    </div>
+    ${committedWeek.length ? `
+      <p class="muted" style="font-weight:700;margin:16px 0 8px">今週コミット中(まだ振り返り対象ではありません)</p>
+      ${committedWeek.map((c) => `<div class="card" style="background:var(--pale)"><p style="margin:0 0 4px;font-weight:700;color:var(--green)">${escapeHTML(c.title)}</p>${impactChipsHTML(c.impacts)}</div>`).join("")}
+    ` : ""}
+  `;
+
+  body.querySelectorAll("#past-commits .card").forEach((card) => {
+    const i = Number(card.dataset.i);
+    card.querySelectorAll(".reflect-btn").forEach((btn) => {
+      btn.onclick = async () => {
+        const status = btn.dataset.status;
+        const pc = await DB.kvGet("pastCommits");
+        pc[i].status = status;
+        await DB.kvSet("pastCommits", pc);
+        const label = status === "done" ? "できた" : status === "partial" ? "一部できた" : "難しかった";
+        const impacts = pc[i].impacts;
+        const impactText = impacts && impacts.length ? `(想定: ${impacts.map((im) => `${im.category}${im.delta > 0 ? "+" : ""}${im.delta}円`).join("・")})` : "";
+        const log = await DB.kvGet("feedbackLog");
+        await DB.kvSet("feedbackLog", [...log, `${pc[i].title}${impactText}: ${label}`]);
+        renderPlanReview(body);
+      };
+    });
+  });
+}
+
+// ==================== 設定 ====================
+
+async function renderSettings(container) {
+  const [fixedCosts, goals, profile, apiKey] = await Promise.all([
+    DB.kvGet("fixedCosts"), DB.kvGet("goals"), DB.kvGet("profile"), DB.kvGet("apiKey"),
+  ]);
+  const totalFixed = fixedCosts.reduce((s, f) => s + f.amount, 0);
+  const ratioSum = goals.proteinRatio + goals.fatRatio + goals.carbsRatio;
+
+  container.innerHTML = `
+    <div class="card">
+      <p class="card-title">APIキー(AI機能に必要)</p>
+      <p class="muted" style="margin:0 0 8px">Anthropicのコンソールで取得したキーを入力してください。この端末の中にのみ保存され、AI呼び出し時だけ直接Anthropicへ送信されます(このアプリの運営者含め、他の誰にも送信されません)。</p>
+      <input type="text" id="set-apikey" placeholder="sk-ant-..." value="${escapeHTML(apiKey)}" style="margin-bottom:8px">
+      <button class="btn btn-green btn-sm" id="save-apikey">保存する</button>
+      <p class="muted-sm" style="margin-top:8px">念のため、Anthropicコンソールでこのキーの利用上限額(例: 月500〜1,000円)を設定しておくと安心です。目安の費用は下部に記載しています。</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">定例の固定費</p>
+      <p class="muted" style="margin:0 0 10px">家賃など、毎月ほぼ同じ金額のものを登録しておくと、記録しなくても毎月自動で計算に含まれます。</p>
+      <div id="fixed-list">
+        ${fixedCosts.map((f, i) => `
+          <div class="row" data-i="${i}">
+            <span style="font-size:13px">${escapeHTML(f.category)}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="amount">${yen(f.amount)}</span>
+              <button class="fixed-remove" data-i="${i}" style="background:none;border:none;color:var(--red);font-size:12px;font-weight:700">削除</button>
+            </div>
+          </div>
+        `).join("")}
+        ${fixedCosts.length ? `<p class="muted-sm">固定費の合計: ${yen(totalFixed)}/月</p>` : ""}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <select id="fixed-cat" style="flex:0 0 auto;width:auto">${APP_DATA.MAIN_CATEGORIES.filter((c) => c !== "貯金").map((c) => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("")}</select>
+        <input type="number" id="fixed-amount" placeholder="金額" style="flex:1">
+        <button class="btn btn-green btn-sm" id="fixed-add" style="width:auto;padding:8px 14px">追加</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">目標</p>
+      <div class="field-2col">
+        <div><span class="field-label">目標カロリー</span><input type="number" id="set-kcal" value="${goals.targetKcal}"></div>
+        <div><span class="field-label">月の貯金目標(円)</span><input type="number" id="set-savings" value="${goals.savingsTarget}"></div>
+      </div>
+      <span class="field-label">PFC比率(%)・合計${ratioSum}${ratioSum !== 100 ? ` <span style="color:var(--red)">※100%になるよう調整してください</span>` : ""}</span>
+      <div class="field-3col" style="margin-top:4px">
+        <div><span class="field-label">P たんぱく質</span><input type="number" id="set-p" value="${goals.proteinRatio}"></div>
+        <div><span class="field-label">F 脂質</span><input type="number" id="set-f" value="${goals.fatRatio}"></div>
+        <div><span class="field-label">C 炭水化物</span><input type="number" id="set-c" value="${goals.carbsRatio}"></div>
+      </div>
+      <button class="btn btn-green btn-sm" id="save-goals" style="margin-top:10px">保存する</button>
+    </div>
+
+    <div class="card">
+      <p class="card-title">プロフィール</p>
+      <div class="field-2col">
+        <div><span class="field-label">年齢</span><input type="number" id="p-age" value="${escapeHTML(profile.age)}"></div>
+        <div><span class="field-label">身長(cm)</span><input type="number" id="p-height" value="${escapeHTML(profile.height)}"></div>
+        <div><span class="field-label">体重(kg)</span><input type="number" id="p-weight" value="${escapeHTML(profile.weight)}"></div>
+        <div><span class="field-label">目標体重(kg)</span><input type="number" id="p-target" value="${escapeHTML(profile.targetWeight)}"></div>
+      </div>
+      <span class="field-label">大事にしたい価値観・削らないでほしいもの</span>
+      <textarea id="p-rules" rows="3" placeholder="例: 交際費(会合)は仕事関係なので削減提案しない。教育費・医療費は対象外。アレルギー: えび、かに。">${escapeHTML(profile.rules)}</textarea>
+      <p class="muted-sm" style="margin:6px 0 0">ここに書いた内容は、来週のプラン提案を作るときにAIへそのまま伝わります。</p>
+      <button class="btn btn-green btn-sm" id="save-profile" style="margin-top:10px">保存する</button>
+    </div>
+
+    <div class="card">
+      <p class="card-title">データのバックアップ</p>
+      <p class="muted" style="margin:0 0 10px">すべてのデータはこの端末の中(ブラウザのIndexedDB)に保存されています。機種変更や万一の消失に備えて、ときどきバックアップの書き出しをおすすめします。</p>
+      <button class="btn btn-outline btn-sm" id="export-btn" style="margin-bottom:8px">バックアップを書き出す(JSON)</button>
+      <input type="file" id="import-file" accept="application/json" style="margin-bottom:8px">
+      <button class="btn btn-outline btn-sm" id="import-btn">このファイルから復元する</button>
+      <div id="backup-msg"></div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">ホーム画面への追加</p>
+      <p class="muted">iPhoneは共有ボタン→「ホーム画面に追加」、Androidはメニュー→「アプリをインストール」で、アイコンをタップして起動する形になります。</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">費用の目安</p>
+      <p class="muted" style="margin:0 0 8px">食事を1日3回記録し、週1〜2回プランを作り直したりコメントで微修正したりする使い方で、月あたりおよそ100〜500円ほどが目安です(2026年7月時点の料金・想定利用量による概算)。</p>
+      <p class="muted-sm">実際の金額は使い方によって変わります。上記のAPIキー欄の下にある案内のとおり、利用上限額を設定しておくと安心です。</p>
+    </div>
+
+    <div class="card">
+      <p class="card-title">バージョン情報</p>
+      <p class="muted">統合ライフコーチ(スマホ版) v1.0.0 ・ データはすべてこの端末内に保存されます。</p>
+    </div>
+  `;
+
+  container.querySelector("#save-apikey").onclick = async () => {
+    await DB.kvSet("apiKey", container.querySelector("#set-apikey").value.trim());
+    toast("APIキーを保存しました");
+  };
+  container.querySelectorAll(".fixed-remove").forEach((btn) => {
+    btn.onclick = async () => {
+      const list = await DB.kvGet("fixedCosts");
+      list.splice(Number(btn.dataset.i), 1);
+      await DB.kvSet("fixedCosts", list);
+      renderSettings(container);
+    };
+  });
+  container.querySelector("#fixed-add").onclick = async () => {
+    const cat = container.querySelector("#fixed-cat").value;
+    const amt = Number(container.querySelector("#fixed-amount").value);
+    if (!amt) return toast("金額を入力してください");
+    const list = await DB.kvGet("fixedCosts");
+    list.push({ id: Date.now(), category: cat, amount: amt });
+    await DB.kvSet("fixedCosts", list);
+    renderSettings(container);
+  };
+  container.querySelector("#save-goals").onclick = async () => {
+    await DB.kvSet("goals", {
+      targetKcal: Number(container.querySelector("#set-kcal").value) || 0,
+      savingsTarget: Number(container.querySelector("#set-savings").value) || 0,
+      proteinRatio: Number(container.querySelector("#set-p").value) || 0,
+      fatRatio: Number(container.querySelector("#set-f").value) || 0,
+      carbsRatio: Number(container.querySelector("#set-c").value) || 0,
+    });
+    toast("目標を保存しました");
+  };
+  container.querySelector("#save-profile").onclick = async () => {
+    await DB.kvSet("profile", {
+      age: container.querySelector("#p-age").value,
+      height: container.querySelector("#p-height").value,
+      weight: container.querySelector("#p-weight").value,
+      targetWeight: container.querySelector("#p-target").value,
+      rules: container.querySelector("#p-rules").value,
+    });
+    toast("プロフィールを保存しました");
+  };
+  container.querySelector("#export-btn").onclick = async () => {
+    const data = await DB.exportAllData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `life-coach-backup-${DB.todayISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  container.querySelector("#import-btn").onclick = async () => {
+    const file = container.querySelector("#import-file").files[0];
+    const msg = container.querySelector("#backup-msg");
+    if (!file) { msg.innerHTML = `<p class="issue">ファイルを選んでください</p>`; return; }
+    try {
+      const text = await file.text();
+      await DB.importAllData(JSON.parse(text));
+      msg.innerHTML = `<p class="ok-line">復元しました。ホームタブなどを開き直して確認してください。</p>`;
+      toast("復元しました");
+    } catch (e) {
+      msg.innerHTML = `<p class="issue">${escapeHTML(e.message)}</p>`;
+    }
+  };
+}
+
+// ==================== 起動 ====================
+
+async function init() {
+  document.getElementById("header-date").textContent = new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" });
+  await checkWeekRollover();
+  document.querySelectorAll(".bottom-nav button").forEach((b) => {
+    b.onclick = () => switchTab(b.dataset.tab);
+  });
+  await switchTab("home");
+
+  // 単一ファイル版のためservice worker登録は行わない
+}
+
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
