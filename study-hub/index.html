@@ -1,0 +1,461 @@
+<title>AIシステム学習帳</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* レイアウト: 上部タブ + 1カラムのノート。配信(講義/ニュース)・知識・復習・実践・メモを行き来する */
+:root {
+  --bg: #EEF1F4;
+  --surface: #FFFFFF;
+  --ink: #18212E;
+  --muted: #5B6676;
+  --line: #D5DBE3;
+  --accent: #2B5C8F;
+  --accent-soft: #DCE7F3;
+  --due: #A8641A;
+  --due-soft: #F6E8D6;
+  --ok: #2D7656;
+  --ok-soft: #DAEEE4;
+  --news: #6B4FA0;
+  --news-soft: #E9E3F4;
+  --code-bg: #E6EAF0;
+  --sans: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12171F; --surface: #1A212C; --ink: #E4E9F0; --muted: #98A3B3; --line: #2C3644;
+  --accent: #7FAEE0; --accent-soft: #22344A; --due: #E0A25A; --due-soft: #3A2C1C;
+  --ok: #6CC49B; --ok-soft: #1B3529; --news: #B49BE3; --news-soft: #2D2540; --code-bg: #232C39; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12171F; --surface: #1A212C; --ink: #E4E9F0; --muted: #98A3B3; --line: #2C3644;
+  --accent: #7FAEE0; --accent-soft: #22344A; --due: #E0A25A; --due-soft: #3A2C1C;
+  --ok: #6CC49B; --ok-soft: #1B3529; --news: #B49BE3; --news-soft: #2D2540; --code-bg: #232C39; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 0 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 14px 0; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: 20px; margin: 0; letter-spacing: .02em; text-wrap: balance; }
+.brand .stats { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; margin-top: 10px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+nav.tabs a { flex: none; padding: 8px 12px; color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14px; border-bottom: 2px solid transparent; }
+nav.tabs a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+nav.tabs a .count { font-family: var(--mono); font-size: 11px; margin-left: 4px; padding: 0 6px; border-radius: 9px; background: var(--due-soft); color: var(--due); }
+main { display: grid; gap: 20px; margin-top: 18px; }
+h2 { font-size: 16px; margin: 0; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.stack { display: grid; gap: 12px; }
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 18px; color: var(--muted); font-size: 14px; }
+
+/* 配信カード */
+.entry { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.entry > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: grid; gap: 4px; }
+.entry > summary::-webkit-details-marker { display: none; }
+.entry-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.kind { font-family: var(--sans); font-weight: 700; font-size: 11px; padding: 1px 8px; border-radius: 4px; letter-spacing: .04em; }
+.kind-lesson { background: var(--accent-soft); color: var(--accent); }
+.kind-deepdive { background: var(--ok-soft); color: var(--ok); }
+.kind-news { background: var(--news-soft); color: var(--news); }
+.entry-title { font-weight: 700; font-size: 16px; }
+.entry-sum { color: var(--muted); font-size: 14px; }
+.entry-body { padding: 0 16px 16px; border-top: 1px solid var(--line); min-width: 0; }
+.md h3 { font-size: 15px; margin: 18px 0 6px; }
+.md p, .md ul, .md ol { margin: 8px 0; }
+.md ul, .md ol { padding-left: 1.3em; }
+.md code { font-family: var(--mono); font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.md pre { background: var(--code-bg); padding: 10px 12px; border-radius: 6px; overflow-x: auto; }
+.md pre code { background: none; padding: 0; }
+.md a { color: var(--accent); }
+.sub-h { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .08em; margin: 18px 0 6px; }
+.quiz { display: grid; gap: 6px; }
+.quiz details { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.quiz summary { cursor: pointer; font-weight: 500; }
+.quiz .ans { margin-top: 6px; color: var(--muted); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: 12px; padding: 2px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-family: var(--sans); }
+.chip:hover { border-color: var(--accent); }
+.chip.active { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+
+/* 知識マップ */
+.area { display: grid; gap: 10px; }
+.area-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.area-head .prog { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.bar { height: 6px; background: var(--code-bg); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); }
+.units { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.units li { display: flex; gap: 8px; align-items: baseline; }
+.units .mark { font-family: var(--mono); font-size: 12px; width: 1.4em; flex: none; color: var(--muted); }
+.units li.done .mark { color: var(--ok); }
+.units li.next { font-weight: 700; }
+.units li.next .mark { color: var(--accent); }
+.concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.concept { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); text-align: left; font: inherit; color: inherit; cursor: pointer; display: grid; gap: 2px; min-width: 0; }
+.concept .name { font-weight: 700; font-size: 14px; }
+.concept .one { font-size: 13px; color: var(--muted); }
+.concept .st { font-size: 11px; font-family: var(--mono); }
+.st-new { color: var(--due); } .st-learning { color: var(--accent); } .st-solid { color: var(--ok); }
+
+/* 復習 */
+.card-review { display: grid; gap: 12px; }
+.card-review .q { font-size: 17px; font-weight: 700; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+button.btn { font: inherit; font-size: 14px; font-weight: 500; padding: 9px 16px; min-height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+button.btn:focus-visible, .chip:focus-visible, .concept:focus-visible, nav.tabs a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.btn.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+button.btn.good { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+button.btn.warn { background: var(--due-soft); color: var(--due); border-color: transparent; }
+button.btn:disabled { opacity: .5; cursor: default; }
+
+/* 実践 */
+.practice { display: grid; gap: 6px; }
+.practice .p-title { font-weight: 700; }
+.practice ol { margin: 4px 0; padding-left: 1.3em; font-size: 14px; }
+.status-pill { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 4px; }
+.s-todo { background: var(--code-bg); color: var(--muted); }
+.s-doing { background: var(--due-soft); color: var(--due); }
+.s-done { background: var(--ok-soft); color: var(--ok); }
+
+/* メモ */
+textarea, input[type="search"] { width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+textarea { min-height: 120px; resize: vertical; }
+.note { display: grid; gap: 4px; }
+.note .when { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.msg { font-size: 13px; color: var(--muted); min-height: 1.2em; }
+.msg.err { color: var(--due); }
+
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); max-width: min(560px, calc(100vw - 32px)); padding: 18px; }
+dialog::backdrop { background: rgb(0 0 0 / .35); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>AIシステム学習帳</h1>
+      <span class="stats" id="stats">読み込み中…</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="#today">今日</a>
+      <a href="#review">復習<span class="count" id="due-count" hidden></span></a>
+      <a href="#map">知識マップ</a>
+      <a href="#log">配信一覧</a>
+      <a href="#practice">実践</a>
+      <a href="#memo">学んだことメモ</a>
+    </nav>
+  </header>
+  <main id="view"></main>
+</div>
+
+<dialog id="concept-dialog"><div id="concept-body"></div><div class="btn-row" style="margin-top:14px"><button class="btn" id="concept-close">閉じる</button></div></dialog>
+
+<script>
+// ---- 状態 ----
+const S = { entries: [], concepts: [], notes: [], practice: [], curriculum: null, ready: false, db: null, canWrite: true };
+const INTERVALS = [1, 3, 7, 14, 30, 60]; // 復習の間隔(日)。stage が上がるほど伸びる
+const AREA_FALLBACK = "その他";
+
+function todayISO(d = new Date()) {
+  const t = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return t.toISOString().slice(0, 10);
+}
+function addDays(iso, n) { const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return todayISO(d); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso.slice(0, 10) + "T00:00:00");
+  return d.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric", weekday: "short" });
+}
+const KIND = { lesson: ["講義", "kind-lesson"], deepdive: ["深掘り", "kind-deepdive"], news: ["ニュース", "kind-news"] };
+const STATUS = { new: "はじめて", learning: "定着中", solid: "身についた" };
+const PSTATUS = { todo: "未着手", doing: "やっている", done: "できた" };
+
+// 小さな Markdown 表示(見出し・箇条書き・コード・太字・リンクだけ)
+function md(src) {
+  const lines = String(src || "").split("\n");
+  let out = "", list = null, code = null;
+  const inline = (t) => esc(t)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const closeList = () => { if (list) { out += `</${list}>`; list = null; } };
+  for (const line of lines) {
+    if (code !== null) {
+      if (line.startsWith("```")) { out += `<pre><code>${esc(code)}</code></pre>`; code = null; } else code += (code ? "\n" : "") + line;
+      continue;
+    }
+    if (line.startsWith("```")) { closeList(); code = ""; continue; }
+    let m;
+    if ((m = line.match(/^#{1,4}\s+(.*)/))) { closeList(); out += `<h3>${inline(m[1])}</h3>`; }
+    else if ((m = line.match(/^\s*[-*]\s+(.*)/))) { if (list !== "ul") { closeList(); out += "<ul>"; list = "ul"; } out += `<li>${inline(m[1])}</li>`; }
+    else if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== "ol") { closeList(); out += "<ol>"; list = "ol"; } out += `<li>${inline(m[1])}</li>`; }
+    else if (line.trim() === "") closeList();
+    else { closeList(); out += `<p>${inline(line)}</p>`; }
+  }
+  if (code !== null) out += `<pre><code>${esc(code)}</code></pre>`;
+  closeList();
+  return `<div class="md">${out}</div>`;
+}
+
+const conceptById = (id) => S.concepts.find((c) => c.id === id);
+const dueConcepts = () => S.concepts.filter((c) => c.nextReview && c.nextReview <= todayISO()).sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+
+// ---- 表示 ----
+function entryHTML(e, open = false) {
+  const [label, cls] = KIND[e.kind] || ["配信", "kind-lesson"];
+  const concepts = (e.concepts || []).map(conceptById).filter(Boolean);
+  return `<details class="entry"${open ? " open" : ""}>
+    <summary>
+      <span class="entry-meta"><span class="kind ${cls}">${label}</span>${esc(fmtDate(e.date))} ${e.slot === "night" ? "夜" : e.slot === "noon" ? "昼" : ""}</span>
+      <span class="entry-title">${esc(e.title)}</span>
+      ${e.summary ? `<span class="entry-sum">${esc(e.summary)}</span>` : ""}
+    </summary>
+    <div class="entry-body">
+      ${md(e.body)}
+      ${(e.quiz || []).length ? `<p class="sub-h">確認クイズ</p><div class="quiz">${e.quiz.map((q) => `<details><summary>${esc(q.q)}</summary><div class="ans">${esc(q.a)}</div></details>`).join("")}</div>` : ""}
+      ${(e.practice || []).length ? `<p class="sub-h">手を動かす</p>${e.practice.map((p) => `<div class="practice"><span class="p-title">${esc(p.title)}</span>${p.why ? `<span class="hint">${esc(p.why)}</span>` : ""}${(p.steps || []).length ? `<ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}</div>`).join("")}` : ""}
+      ${(e.sources || []).length ? `<p class="sub-h">出典</p><ul class="md">${e.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a></li>`).join("")}</ul>` : ""}
+      ${concepts.length ? `<p class="sub-h">この回の知識</p><div class="chips">${concepts.map((c) => `<button class="chip" data-concept="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : ""}
+    </div>
+  </details>`;
+}
+
+function viewToday() {
+  const today = todayISO();
+  const todays = S.entries.filter((e) => e.date === today);
+  const latest = todays.length ? todays : S.entries.slice(0, 2);
+  const due = dueConcepts();
+  const pending = S.notes.filter((n) => n.status === "pending");
+  const doing = S.practice.filter((p) => p.status !== "done").slice(0, 2);
+  return `
+    <section class="stack">
+      <div class="section-head"><h2>${todays.length ? "今日の配信" : "最新の配信"}</h2><span class="hint">昼 12:30 講義 / 夜 20:30 ニュース</span></div>
+      ${latest.length ? latest.map((e, i) => entryHTML(e, i === 0)).join("") : `<div class="empty">まだ配信がありません。12:30 に最初の講義が届くと、ここに表示されます。</div>`}
+    </section>
+    <section class="panel stack">
+      <div class="section-head"><h2>今日の復習</h2><a href="#review" class="hint">復習タブへ</a></div>
+      ${due.length ? `<p class="hint">${due.length} 件が復習の時期です: ${due.slice(0, 5).map((c) => esc(c.name)).join("、")}${due.length > 5 ? " ほか" : ""}</p>` : `<p class="hint">今日復習するものはありません。</p>`}
+    </section>
+    <section class="panel stack">
+      <div class="section-head"><h2>次に深掘りするメモ</h2><a href="#memo" class="hint">メモを書く</a></div>
+      ${pending.length ? pending.map((n) => `<p style="margin:0">・${esc(n.text.slice(0, 80))}${n.text.length > 80 ? "…" : ""}</p>`).join("") : `<p class="hint">学んだことを書いておくと、次の昼の配信で深掘りして知識マップに組み込みます。</p>`}
+    </section>
+    ${doing.length ? `<section class="stack"><div class="section-head"><h2>進行中の実践</h2><a href="#practice" class="hint">すべて見る</a></div>${doing.map(practiceHTML).join("")}</section>` : ""}
+  `;
+}
+
+let reviewIdx = 0, reviewShown = false;
+function viewReview() {
+  const due = dueConcepts();
+  if (!due.length) {
+    const next = S.concepts.filter((c) => c.nextReview).sort((a, b) => a.nextReview.localeCompare(b.nextReview))[0];
+    return `<section class="panel stack"><h2>復習</h2><p class="hint">今日の復習はすべて終わりました。${next ? `次は ${esc(fmtDate(next.nextReview))} に「${esc(next.name)}」です。` : ""}</p></section>`;
+  }
+  if (reviewIdx >= due.length) reviewIdx = 0;
+  const c = due[reviewIdx];
+  const q = c.reviewQ || `「${c.name}」とは何か、自分の言葉で説明できますか？`;
+  return `<section class="panel card-review">
+    <div class="section-head"><span class="entry-meta">${reviewIdx + 1} / ${due.length}・${esc(c.area || AREA_FALLBACK)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || ""}</span></div>
+    <p class="q">${esc(q)}</p>
+    ${reviewShown ? `<div>${c.reviewA ? `<p style="margin:0 0 8px"><strong>${esc(c.reviewA)}</strong></p>` : ""}${md(c.detail || c.oneLine)}</div>
+      <p class="hint">思い出せましたか？ 答えに合わせて次の復習日が決まります。</p>
+      <div class="btn-row">
+        <button class="btn good" data-grade="good">覚えてた</button>
+        <button class="btn warn" data-grade="hard">あやしい</button>
+        <button class="btn" data-grade="again">忘れてた</button>
+      </div>` : `<div class="btn-row"><button class="btn primary" id="reveal">答えを見る</button></div>`}
+    <p class="msg" id="review-msg"></p>
+  </section>`;
+}
+
+let mapArea = null;
+function viewMap() {
+  const areas = (S.curriculum?.areas || []);
+  const conceptAreas = [...new Set(S.concepts.map((c) => c.area || AREA_FALLBACK))];
+  const allAreas = [...new Set([...areas.map((a) => a.name), ...conceptAreas])];
+  const filtered = S.concepts.filter((c) => !mapArea || (c.area || AREA_FALLBACK) === mapArea).sort((a, b) => (a.firstSeen || "").localeCompare(b.firstSeen || ""));
+  const total = areas.reduce((s, a) => s + a.units.length, 0), done = areas.reduce((s, a) => s + a.units.filter((u) => u.status === "done").length, 0);
+  let nextMarked = false;
+  return `
+    <section class="stack">
+      <div class="section-head"><h2>カリキュラム</h2><span class="hint">${done} / ${total} 回 完了</span></div>
+      ${areas.length ? areas.map((a) => {
+        const d = a.units.filter((u) => u.status === "done").length;
+        return `<div class="panel area">
+          <div class="area-head"><strong>${esc(a.name)}</strong><span class="prog">${d}/${a.units.length}</span></div>
+          <div class="bar"><i style="width:${a.units.length ? Math.round((d / a.units.length) * 100) : 0}%"></i></div>
+          <ul class="units">${a.units.map((u) => {
+            let cls = u.status === "done" ? "done" : "";
+            if (u.status !== "done" && !nextMarked) { cls = "next"; nextMarked = true; }
+            return `<li class="${cls}"><span class="mark">${u.status === "done" ? "✓" : cls === "next" ? "→" : "·"}</span><span>${esc(u.title)}</span></li>`;
+          }).join("")}</ul>
+        </div>`;
+      }).join("") : `<div class="empty">カリキュラムはまだ登録されていません。</div>`}
+    </section>
+    <section class="stack">
+      <div class="section-head"><h2>身につけた知識</h2><span class="hint">${S.concepts.length} 個</span></div>
+      <div class="chips"><button class="chip${!mapArea ? " active" : ""}" data-area="">すべて</button>${allAreas.map((a) => `<button class="chip${mapArea === a ? " active" : ""}" data-area="${esc(a)}">${esc(a)}</button>`).join("")}</div>
+      ${filtered.length ? `<div class="concept-grid">${filtered.map((c) => `<button class="concept" data-concept="${esc(c.id)}"><span class="name">${esc(c.name)}</span><span class="one">${esc(c.oneLine)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || "はじめて"}${c.nextReview ? `・次の復習 ${esc(fmtDate(c.nextReview))}` : ""}</span></button>`).join("")}</div>` : `<div class="empty">まだ知識がありません。配信が届くたびに増えていきます。</div>`}
+    </section>`;
+}
+
+let logKind = "", logQuery = "";
+function viewLog() {
+  const q = logQuery.trim().toLowerCase();
+  const list = S.entries.filter((e) => (!logKind || e.kind === logKind) && (!q || [e.title, e.summary, e.body, ...(e.tags || [])].join(" ").toLowerCase().includes(q)));
+  return `<section class="stack">
+    <div class="section-head"><h2>配信一覧</h2><span class="hint">${list.length} 件</span></div>
+    <input type="search" id="log-q" placeholder="キーワードで探す(例: git、サンドボックス)" value="${esc(logQuery)}">
+    <div class="chips">${[["", "すべて"], ["lesson", "講義"], ["deepdive", "深掘り"], ["news", "ニュース"]].map(([k, l]) => `<button class="chip${logKind === k ? " active" : ""}" data-kind="${k}">${l}</button>`).join("")}</div>
+    ${list.length ? list.map((e) => entryHTML(e)).join("") : `<div class="empty">該当する配信はありません。</div>`}
+  </section>`;
+}
+
+function practiceHTML(p) {
+  const concepts = (p.concepts || []).map(conceptById).filter(Boolean);
+  return `<div class="panel practice">
+    <div class="section-head"><span class="p-title">${esc(p.title)}</span><span class="status-pill s-${p.status || "todo"}">${PSTATUS[p.status] || "未着手"}</span></div>
+    ${p.why ? `<span class="hint">${esc(p.why)}</span>` : ""}
+    ${(p.steps || []).length ? `<ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}
+    ${p.time ? `<span class="hint">目安: ${esc(p.time)}</span>` : ""}
+    ${concepts.length ? `<div class="chips">${concepts.map((c) => `<button class="chip" data-concept="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : ""}
+    <div class="btn-row">${["todo", "doing", "done"].filter((s) => s !== (p.status || "todo")).map((s) => `<button class="btn" data-pstatus="${s}" data-pid="${esc(p.id)}">${PSTATUS[s]}にする</button>`).join("")}</div>
+  </div>`;
+}
+function viewPractice() {
+  const order = { doing: 0, todo: 1, done: 2 };
+  const list = [...S.practice].sort((a, b) => (order[a.status || "todo"] - order[b.status || "todo"]) || (b.createdAt || "").localeCompare(a.createdAt || ""));
+  return `<section class="stack">
+    <div class="section-head"><h2>実践課題</h2><span class="hint">読んだだけで終わらせず、手を動かして確かめる</span></div>
+    ${list.length ? list.map(practiceHTML).join("") : `<div class="empty">実践課題はまだありません。配信のたびに、学んだ内容を試せる課題が追加されます。</div>`}
+  </section>`;
+}
+
+function viewMemo() {
+  const list = [...S.notes].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  return `<section class="panel stack">
+    <h2>学んだことを書く</h2>
+    <p class="hint">今日わかったこと、疑問に思ったことを自由に書いてください。次の昼の配信で深掘りし、知識マップに組み込みます。</p>
+    <textarea id="memo-text" placeholder="例: 今日はシェルとgit、サンドボックスがどういうものか学んだ。仮想的なハコを作ることの重要性が分かった。"></textarea>
+    <div class="btn-row"><button class="btn primary" id="memo-save"${S.canWrite ? "" : " disabled"}>メモを保存</button></div>
+    <p class="msg" id="memo-msg">${S.canWrite ? "" : "このページでは保存できません。"}</p>
+  </section>
+  <section class="stack">
+    <h2>これまでのメモ</h2>
+    ${list.length ? list.map((n) => `<div class="panel note"><span class="when">${esc(fmtDate(n.createdAt))}・${n.status === "done" ? "深掘り済み" : "深掘り待ち"}</span><span style="white-space:pre-wrap">${esc(n.text)}</span>${n.resultEntry ? `<a class="hint" href="#log" data-goto="${esc(n.resultEntry)}">深掘りした配信を見る</a>` : ""}</div>`).join("") : `<div class="empty">まだメモはありません。</div>`}
+  </section>`;
+}
+
+const VIEWS = { today: viewToday, review: viewReview, map: viewMap, log: viewLog, practice: viewPractice, memo: viewMemo };
+function currentView() { const h = location.hash.slice(1); return VIEWS[h] ? h : "today"; }
+
+function render() {
+  const v = currentView();
+  document.querySelectorAll("#tabs a").forEach((a) => {
+    if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  const due = dueConcepts().length;
+  const dc = document.getElementById("due-count");
+  dc.hidden = !due; dc.textContent = due;
+  document.getElementById("stats").textContent = S.ready ? `配信 ${S.entries.length}・知識 ${S.concepts.length}・実践 ${S.practice.filter((p) => p.status === "done").length}/${S.practice.length}` : "読み込み中…";
+  // 入力中の検索欄はフォーカスを保つ
+  const focusLog = document.activeElement?.id === "log-q";
+  const caret = focusLog ? document.activeElement.selectionStart : null;
+  document.getElementById("view").innerHTML = VIEWS[v]();
+  if (focusLog) { const i = document.getElementById("log-q"); i.focus(); i.setSelectionRange(caret, caret); }
+}
+
+// ---- 操作 ----
+document.addEventListener("click", async (ev) => {
+  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],#reveal,#memo-save,#concept-close,[data-goto]");
+  if (!t) return;
+  if (t.dataset.concept) { ev.preventDefault(); openConcept(t.dataset.concept); return; }
+  if (t.id === "concept-close") { document.getElementById("concept-dialog").close(); return; }
+  if (t.hasAttribute("data-area")) { mapArea = t.dataset.area || null; render(); return; }
+  if (t.hasAttribute("data-kind")) { logKind = t.dataset.kind; render(); return; }
+  if (t.dataset.goto) { logKind = ""; logQuery = ""; return; }
+  if (t.id === "reveal") { reviewShown = true; render(); return; }
+  if (t.dataset.grade) { await grade(t.dataset.grade); return; }
+  if (t.dataset.pstatus) { await setPracticeStatus(t.dataset.pid, t.dataset.pstatus); return; }
+  if (t.id === "memo-save") { await saveMemo(); return; }
+});
+document.addEventListener("input", (ev) => { if (ev.target.id === "log-q") { logQuery = ev.target.value; render(); } });
+window.addEventListener("hashchange", () => { reviewShown = false; render(); window.scrollTo(0, 0); });
+
+function openConcept(id) {
+  const c = conceptById(id);
+  if (!c) return;
+  const related = (c.related || []).map(conceptById).filter(Boolean);
+  const entries = S.entries.filter((e) => (e.concepts || []).includes(id));
+  document.getElementById("concept-body").innerHTML = `
+    <p class="entry-meta" style="margin:0">${esc(c.area || AREA_FALLBACK)}・<span class="st st-${c.status || "new"}">${STATUS[c.status] || "はじめて"}</span></p>
+    <h2 style="font-size:18px;margin:4px 0 6px">${esc(c.name)}</h2>
+    <p style="margin:0 0 8px"><strong>${esc(c.oneLine)}</strong></p>
+    ${md(c.detail)}
+    ${related.length ? `<p class="sub-h">つながる知識</p><div class="chips">${related.map((r) => `<button class="chip" data-concept="${esc(r.id)}">${esc(r.name)}</button>`).join("")}</div>` : ""}
+    ${entries.length ? `<p class="sub-h">登場した配信</p><ul class="md">${entries.map((e) => `<li>${esc(fmtDate(e.date))} ${esc(e.title)}</li>`).join("")}</ul>` : ""}
+    <p class="hint" style="margin-top:10px">${c.firstSeen ? `初めて学んだ日: ${esc(fmtDate(c.firstSeen))}` : ""}${c.nextReview ? `・次の復習: ${esc(fmtDate(c.nextReview))}` : ""}</p>`;
+  const dlg = document.getElementById("concept-dialog");
+  if (!dlg.open) dlg.showModal();
+}
+
+async function grade(g) {
+  const c = dueConcepts()[reviewIdx];
+  const msg = document.getElementById("review-msg");
+  if (!c || !S.db) return;
+  let stage = c.stage || 0;
+  if (g === "good") stage = Math.min(stage + 1, INTERVALS.length - 1);
+  else if (g === "again") stage = 0;
+  const days = g === "hard" ? 1 : INTERVALS[stage];
+  const patch = { stage, nextReview: addDays(todayISO(), days), lastReviewed: todayISO(), status: stage >= 4 ? "solid" : "learning", reviewCount: (c.reviewCount || 0) + 1, lastGrade: g };
+  try {
+    await S.db.collection("concepts").doc(c.id).update(patch);
+    reviewShown = false;
+  } catch (e) {
+    msg.textContent = "保存できませんでした。通信状況を確認して、もう一度押してください。"; msg.className = "msg err";
+  }
+}
+
+async function setPracticeStatus(id, status) {
+  if (!S.db) return;
+  try { await S.db.collection("practice").doc(id).update({ status, updatedAt: new Date().toISOString() }); }
+  catch (e) { /* 次のスナップショットで元の表示に戻る */ }
+}
+
+async function saveMemo() {
+  const ta = document.getElementById("memo-text"), msg = document.getElementById("memo-msg");
+  const text = ta.value.trim();
+  if (!text) { msg.textContent = "メモの内容を書いてください。"; msg.className = "msg err"; return; }
+  if (!S.db) { msg.textContent = "このページではまだ保存できません。少し待ってからもう一度押してください。"; msg.className = "msg err"; return; }
+  try {
+    await S.db.collection("notes").add({ text, status: "pending", createdAt: new Date().toISOString() });
+    ta.value = "";
+    msg.textContent = "保存しました。次の昼の配信で深掘りします。"; msg.className = "msg";
+  } catch (e) {
+    if (e?.code === "invalid_argument") { S.canWrite = false; }
+    msg.textContent = "保存できませんでした。もう一度試してください。"; msg.className = "msg err";
+  }
+}
+
+// ---- データ接続 ----
+function subscribe(name, apply) {
+  S.db.collection(name).onSnapshot((snap) => { apply(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); S.ready = true; render(); },
+    () => {});
+}
+async function boot() {
+  render();
+  const db = await window.claude?.use?.("db");
+  if (!db) { S.ready = true; document.getElementById("stats").textContent = "データに接続できません"; render(); return; }
+  S.db = db;
+  subscribe("entries", (rows) => { S.entries = rows.sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.createdAt || "").localeCompare(a.createdAt || "")); });
+  subscribe("concepts", (rows) => { S.concepts = rows; });
+  subscribe("notes", (rows) => { S.notes = rows; });
+  subscribe("practice", (rows) => { S.practice = rows; });
+  db.doc("meta/curriculum").onSnapshot((d) => { S.curriculum = d.exists ? d.data() : null; render(); }, () => {});
+}
+boot();
+</script>
