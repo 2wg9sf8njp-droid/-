@@ -111,6 +111,22 @@ button.btn.good { background: var(--ok-soft); color: var(--ok); border-color: tr
 button.btn.warn { background: var(--due-soft); color: var(--due); border-color: transparent; }
 button.btn:disabled { opacity: .5; cursor: default; }
 
+/* 選択式(復習・振り返り) */
+.choices { display: grid; gap: 8px; }
+button.choice { font: inherit; font-size: 15px; text-align: left; padding: 10px 14px; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; display: flex; gap: 10px; align-items: baseline; }
+button.choice:hover:not(:disabled) { border-color: var(--accent); }
+button.choice:disabled { cursor: default; }
+button.choice .lab { font-family: var(--mono); font-size: 12px; color: var(--muted); flex: none; }
+button.choice.correct { background: var(--ok-soft); border-color: var(--ok); }
+button.choice.wrong { background: var(--due-soft); border-color: var(--due); }
+button.choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.verdict { font-weight: 700; margin: 0; }
+.verdict.ok { color: var(--ok); } .verdict.ng { color: var(--due); }
+.explain { background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+.quiz-item { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
+.quiz-item .q { font-weight: 500; }
+.quiz-score { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
 /* 実践 */
 .practice { display: grid; gap: 6px; }
 .practice .p-title { font-weight: 700; }
@@ -216,12 +232,42 @@ function entryHTML(e, open = false) {
     </summary>
     <div class="entry-body">
       ${md(e.body)}
-      ${(e.quiz || []).length ? `<p class="sub-h">確認クイズ</p><div class="quiz">${e.quiz.map((q) => `<details><summary>${esc(q.q)}</summary><div class="ans">${esc(q.a)}</div></details>`).join("")}</div>` : ""}
+      ${quizHTML(e)}
       ${(e.practice || []).length ? `<p class="sub-h">手を動かす</p>${e.practice.map((p) => `<div class="practice"><span class="p-title">${esc(p.title)}</span>${p.why ? `<span class="hint">${esc(p.why)}</span>` : ""}${(p.steps || []).length ? `<ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}</div>`).join("")}` : ""}
       ${(e.sources || []).length ? `<p class="sub-h">出典</p><ul class="md">${e.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a></li>`).join("")}</ul>` : ""}
       ${concepts.length ? `<p class="sub-h">この回の知識</p><div class="chips">${concepts.map((c) => `<button class="chip" data-concept="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : ""}
     </div>
   </details>`;
+}
+
+// 選択式の問題。選んだ答えはページを開いている間だけ覚えておく(採点は記録しない)
+const quizPicks = {};
+const LABELS = ["A", "B", "C", "D", "E"];
+function choicesHTML(choices, answer, picked, attrs) {
+  return `<div class="choices">${choices.map((c, i) => {
+    let cls = "";
+    if (picked != null) { if (i === answer) cls = " correct"; else if (i === picked) cls = " wrong"; }
+    return `<button class="choice${cls}" ${attrs(i)}${picked != null ? " disabled" : ""}><span class="lab">${LABELS[i] || i + 1}</span><span>${esc(c)}</span></button>`;
+  }).join("")}</div>`;
+}
+function quizHTML(e) {
+  const quiz = e.quiz || [];
+  if (!quiz.length) return "";
+  const title = e.kind === "lesson" || e.kind === "deepdive" ? "今日の振り返り" : "確認クイズ";
+  const choiceQs = quiz.map((q, i) => [q, i]).filter(([q]) => Array.isArray(q.choices) && q.choices.length);
+  const answered = choiceQs.filter(([, i]) => quizPicks[e.id + ":" + i] != null);
+  const correct = answered.filter(([q, i]) => quizPicks[e.id + ":" + i] === q.answer).length;
+  const score = choiceQs.length && answered.length === choiceQs.length ? `<span class="quiz-score">${correct} / ${choiceQs.length} 問正解</span>` : "";
+  return `<div class="section-head"><p class="sub-h">${title}</p>${score}</div><div class="quiz">${quiz.map((q, i) => {
+    if (!Array.isArray(q.choices) || !q.choices.length) {
+      return `<details><summary>${esc(q.q)}</summary><div class="ans">${esc(q.a)}</div></details>`;
+    }
+    const key = e.id + ":" + i, picked = quizPicks[key];
+    return `<div class="quiz-item"><span class="q">${esc(q.q)}</span>
+      ${choicesHTML(q.choices, q.answer, picked, (c) => `data-qkey="${esc(key)}" data-pick="${c}"`)}
+      ${picked != null ? `<p class="verdict ${picked === q.answer ? "ok" : "ng"}">${picked === q.answer ? "正解" : `不正解。正解は ${LABELS[q.answer]}`}</p>${q.a ? `<div class="explain">${esc(q.a)}</div>` : ""}` : ""}
+    </div>`;
+  }).join("")}</div>`;
 }
 
 function viewToday() {
@@ -248,26 +294,41 @@ function viewToday() {
   `;
 }
 
-let reviewIdx = 0, reviewShown = false;
+// 復習カードの状態。カードの id ごとに持つので、次のカードへ進むと必ず未回答から始まる
+let rv = { id: null, picked: null, revealed: false, sessionDone: 0 };
 function viewReview() {
   const due = dueConcepts();
   if (!due.length) {
     const next = S.concepts.filter((c) => c.nextReview).sort((a, b) => a.nextReview.localeCompare(b.nextReview))[0];
-    return `<section class="panel stack"><h2>復習</h2><p class="hint">今日の復習はすべて終わりました。${next ? `次は ${esc(fmtDate(next.nextReview))} に「${esc(next.name)}」です。` : ""}</p></section>`;
+    return `<section class="panel stack"><h2>復習</h2><p class="hint">${rv.sessionDone ? `${rv.sessionDone} 問の復習が終わりました。` : ""}今日の復習はすべて終わりました。${next ? `次は ${esc(fmtDate(next.nextReview))} に「${esc(next.name)}」です。` : ""}</p></section>`;
   }
-  if (reviewIdx >= due.length) reviewIdx = 0;
-  const c = due[reviewIdx];
+  const c = due[0];
+  if (rv.id !== c.id) rv = { id: c.id, picked: null, revealed: false, sessionDone: rv.sessionDone };
   const q = c.reviewQ || `「${c.name}」とは何か、自分の言葉で説明できますか？`;
+  const hasChoices = Array.isArray(c.reviewChoices) && c.reviewChoices.length > 1;
+  const answered = hasChoices ? rv.picked != null : rv.revealed;
+  const isCorrect = hasChoices && rv.picked === c.reviewAnswer;
+  const explain = `<div class="explain">${c.reviewA ? `<p style="margin:0 0 6px"><strong>${esc(c.reviewA)}</strong></p>` : ""}${md(c.detail || c.oneLine)}</div>`;
+  let body;
+  if (hasChoices) {
+    body = `<p class="hint" style="margin:0">いちばん合うものを選んでください。</p>
+      ${choicesHTML(c.reviewChoices, c.reviewAnswer, rv.picked, (i) => `data-rpick="${i}"`)}
+      ${answered ? `<p class="verdict ${isCorrect ? "ok" : "ng"}">${isCorrect ? "正解" : `不正解。正解は ${LABELS[c.reviewAnswer]}`}</p>${explain}
+        <div class="btn-row">${isCorrect
+          ? `<button class="btn primary" data-grade="good">次へ</button><button class="btn warn" data-grade="hard">勘で当たった</button>`
+          : `<button class="btn primary" data-grade="again">次へ(明日もう一度)</button>`}</div>` : ""}`;
+  } else {
+    body = answered
+      ? `${rv.written ? `<div><p class="sub-h" style="margin:0 0 4px">あなたの答え</p><p style="margin:0;white-space:pre-wrap">${esc(rv.written)}</p></div>` : ""}${explain}<p class="hint">自分の答えと比べて、どれくらい思い出せましたか？</p>
+        <div class="btn-row"><button class="btn good" data-grade="good">言えた</button><button class="btn warn" data-grade="hard">半分くらい</button><button class="btn" data-grade="again">言えなかった</button></div>`
+      : `<p class="hint" style="margin:0">頭の中で答えるか、下に書いてから答えを見てください。キーワードだけでも大丈夫です。</p>
+        <textarea id="rv-text" placeholder="例: ○○のための仕組みで、△△を防げる" style="min-height:80px"></textarea>
+        <div class="btn-row"><button class="btn primary" id="reveal">答えを見る</button></div>`;
+  }
   return `<section class="panel card-review">
-    <div class="section-head"><span class="entry-meta">${reviewIdx + 1} / ${due.length}・${esc(c.area || AREA_FALLBACK)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || ""}</span></div>
+    <div class="section-head"><span class="entry-meta">残り ${due.length} 問・${esc(c.area || AREA_FALLBACK)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || ""}</span></div>
     <p class="q">${esc(q)}</p>
-    ${reviewShown ? `<div>${c.reviewA ? `<p style="margin:0 0 8px"><strong>${esc(c.reviewA)}</strong></p>` : ""}${md(c.detail || c.oneLine)}</div>
-      <p class="hint">思い出せましたか？ 答えに合わせて次の復習日が決まります。</p>
-      <div class="btn-row">
-        <button class="btn good" data-grade="good">覚えてた</button>
-        <button class="btn warn" data-grade="hard">あやしい</button>
-        <button class="btn" data-grade="again">忘れてた</button>
-      </div>` : `<div class="btn-row"><button class="btn primary" id="reveal">答えを見る</button></div>`}
+    ${body}
     <p class="msg" id="review-msg"></p>
   </section>`;
 }
@@ -371,20 +432,22 @@ function render() {
 
 // ---- 操作 ----
 document.addEventListener("click", async (ev) => {
-  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],#reveal,#memo-save,#concept-close,[data-goto]");
+  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],[data-rpick],[data-qkey],#reveal,#memo-save,#concept-close,[data-goto]");
   if (!t) return;
+  if (t.dataset.rpick != null) { rv.picked = Number(t.dataset.rpick); render(); return; }
+  if (t.dataset.qkey) { quizPicks[t.dataset.qkey] = Number(t.dataset.pick); render(); return; }
   if (t.dataset.concept) { ev.preventDefault(); openConcept(t.dataset.concept); return; }
   if (t.id === "concept-close") { document.getElementById("concept-dialog").close(); return; }
   if (t.hasAttribute("data-area")) { mapArea = t.dataset.area || null; render(); return; }
   if (t.hasAttribute("data-kind")) { logKind = t.dataset.kind; render(); return; }
   if (t.dataset.goto) { logKind = ""; logQuery = ""; return; }
-  if (t.id === "reveal") { reviewShown = true; render(); return; }
+  if (t.id === "reveal") { rv.written = document.getElementById("rv-text")?.value.trim() || ""; rv.revealed = true; render(); return; }
   if (t.dataset.grade) { await grade(t.dataset.grade); return; }
   if (t.dataset.pstatus) { await setPracticeStatus(t.dataset.pid, t.dataset.pstatus); return; }
   if (t.id === "memo-save") { await saveMemo(); return; }
 });
 document.addEventListener("input", (ev) => { if (ev.target.id === "log-q") { logQuery = ev.target.value; render(); } });
-window.addEventListener("hashchange", () => { reviewShown = false; render(); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
 
 function openConcept(id) {
   const c = conceptById(id);
@@ -404,19 +467,25 @@ function openConcept(id) {
 }
 
 async function grade(g) {
-  const c = dueConcepts()[reviewIdx];
-  const msg = document.getElementById("review-msg");
+  const c = conceptById(rv.id);
   if (!c || !S.db) return;
   let stage = c.stage || 0;
   if (g === "good") stage = Math.min(stage + 1, INTERVALS.length - 1);
   else if (g === "again") stage = 0;
   const days = g === "hard" ? 1 : INTERVALS[stage];
   const patch = { stage, nextReview: addDays(todayISO(), days), lastReviewed: todayISO(), status: stage >= 4 ? "solid" : "learning", reviewCount: (c.reviewCount || 0) + 1, lastGrade: g };
+  // 書き込みを待たずに次のカードへ進める(保存の反映で前のカードの答えが残らないように、状態を先に戻す)
+  const prev = { ...rv };
+  Object.assign(c, patch);
+  rv = { id: null, picked: null, revealed: false, sessionDone: rv.sessionDone + 1 };
+  render();
   try {
     await S.db.collection("concepts").doc(c.id).update(patch);
-    reviewShown = false;
   } catch (e) {
-    msg.textContent = "保存できませんでした。通信状況を確認して、もう一度押してください。"; msg.className = "msg err";
+    rv = prev;
+    render();
+    const msg = document.getElementById("review-msg");
+    if (msg) { msg.textContent = "保存できませんでした。通信状況を確認して、もう一度押してください。"; msg.className = "msg err"; }
   }
 }
 
