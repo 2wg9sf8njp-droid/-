@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>築城記 カステルム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* 方針：鉄と胡桃材の暗い操作盤に、羊皮紙色の文字と金箔のアクセント。3D世界を主役に周縁へ小さく配置 */
+:root {
+  --bg: #12100d;
+  --panel: rgba(24, 21, 17, 0.9);
+  --panel-solid: #1b1814;
+  --line: rgba(201, 162, 79, 0.28);
+  --fg: #eadfc6;
+  --muted: #a99c82;
+  --gilt: #c9a24f;
+  --gilt-hi: #e7c877;
+  --moss: #8fae66;
+  --warn: #e0954a;
+  --bad: #e0604a;
+  --input: #2a251e;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 13px; }
+button, select, input { font-family: inherit; font-size: inherit; color: var(--fg); }
+button { cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--gilt-hi); outline-offset: 1px; }
+#app { position: fixed; inset: 0; }
+#view { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+
+/* 上部バー */
+#topbar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 6px max(12px, env(safe-area-inset-right, 0px)) 6px max(12px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(180deg, rgba(18,16,13,0.96), rgba(18,16,13,0.82)); border-bottom: 1px solid var(--line); z-index: 5; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 19px; letter-spacing: 0.08em; color: var(--gilt-hi); white-space: nowrap; }
+.brand small { font-family: var(--font-ui); font-weight: 500; font-size: 10px; letter-spacing: 0.2em; color: var(--muted); margin-left: 6px; text-transform: uppercase; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { background: transparent; border: 0; padding: 5px 9px; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: rgba(201,162,79,0.2); color: var(--gilt-hi); }
+.clock { font-variant-numeric: tabular-nums; min-width: 92px; color: var(--fg); }
+.clock b { font-family: var(--font-display); color: var(--gilt-hi); font-weight: 600; }
+.spacer { flex: 1; }
+.btn { background: var(--input); border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; }
+.btn:hover { border-color: var(--gilt); }
+.btn.primary { background: rgba(201,162,79,0.18); border-color: var(--gilt); color: var(--gilt-hi); }
+select.btn { padding: 4px 6px; }
+.totals { display: flex; gap: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.totals span b { color: var(--fg); font-weight: 500; }
+
+/* 左：建築パレット */
+#palette { position: absolute; top: 58px; left: max(10px, env(safe-area-inset-left, 0px)); width: 212px; max-height: calc(100% - 140px); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; z-index: 4; }
+#palette h3 { font-family: var(--font-display); font-weight: 600; font-size: 12px; letter-spacing: 0.18em; color: var(--gilt); margin: 8px 4px 5px; }
+#palette h3:first-child { margin-top: 2px; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.tool { display: flex; align-items: center; justify-content: space-between; gap: 4px; background: rgba(255,255,255,0.03); border: 1px solid transparent; border-radius: 4px; padding: 6px 7px; text-align: left; color: var(--fg); min-width: 0; }
+.tool span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tool kbd { font-family: var(--font-ui); font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; }
+.tool:hover { border-color: var(--line); }
+.tool[aria-pressed="true"] { background: rgba(201,162,79,0.2); border-color: var(--gilt); color: var(--gilt-hi); }
+.tool.wide { grid-column: span 2; }
+#toolopts { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 6px; }
+#toolopts:empty { display: none; }
+.opt { display: grid; grid-template-columns: 44px 1fr 40px; align-items: center; gap: 6px; color: var(--muted); }
+.opt output { text-align: right; color: var(--fg); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--gilt); }
+.optnote { color: var(--muted); font-size: 11.5px; line-height: 1.55; }
+
+/* 右：情報パネル */
+#info { position: absolute; top: 58px; right: max(10px, env(safe-area-inset-right, 0px)); width: 268px; max-height: calc(100% - 300px); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; z-index: 4; }
+#info h2 { font-family: var(--font-display); font-weight: 800; font-size: 17px; margin: 0 0 4px; color: var(--gilt-hi); text-wrap: balance; }
+#info h4 { font-family: var(--font-display); font-weight: 600; font-size: 11.5px; letter-spacing: 0.18em; color: var(--gilt); margin: 10px 0 4px; }
+#info p { margin: 4px 0; line-height: 1.6; color: var(--fg); }
+#info .muted { color: var(--muted); }
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 4px 0; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.hpbar { height: 6px; background: #3a3128; border-radius: 3px; overflow: hidden; margin-top: 3px; }
+.hpbar i { display: block; height: 100%; background: var(--moss); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.danger { border-color: rgba(224,96,74,0.6); color: #f0a090; }
+
+/* 右下：ミニマップ */
+#mapwrap { position: absolute; right: max(10px, env(safe-area-inset-right, 0px)); bottom: 12px; z-index: 4; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+#mapwrap .cap { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin: 0 2px 4px; }
+#minimap { display: block; width: 200px; height: 200px; image-rendering: auto; cursor: crosshair; border-radius: 3px; }
+
+/* 下：状態・ヒント */
+#bottom { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 12px; right: 232px; z-index: 4; display: grid; gap: 4px; pointer-events: none; }
+#status { justify-self: start; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--moss); border-radius: 4px; padding: 6px 10px; max-width: 100%; transition: border-color .2s; }
+#status.warn { border-left-color: var(--warn); color: #f3d2b0; }
+#status.error { border-left-color: var(--bad); color: #f6b9ac; }
+#status.flash { animation: shake .25s; }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+#hint { justify-self: start; color: var(--muted); background: rgba(18,16,13,0.7); padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+
+/* 探索モード */
+#crosshair { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; z-index: 4; pointer-events: none; }
+#crosshair::before, #crosshair::after { content: ""; position: absolute; background: rgba(255,255,255,0.8); }
+#crosshair::before { left: 6px; top: 0; width: 2px; height: 14px; }
+#crosshair::after { top: 6px; left: 0; height: 2px; width: 14px; }
+#explore-card { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; background: var(--panel); border: 1px solid var(--gilt); border-radius: 8px; padding: 18px 22px; text-align: center; max-width: min(420px, calc(100% - 32px)); }
+#explore-card h2 { font-family: var(--font-display); color: var(--gilt-hi); margin: 0 0 8px; font-size: 20px; }
+#explore-card p { color: var(--muted); line-height: 1.7; margin: 4px 0 12px; }
+body.explore #palette, body.explore #toolopts, body.explore #info { display: none; }
+
+/* モーダル */
+.modal { position: absolute; inset: 0; z-index: 20; background: rgba(8,7,5,0.6); display: grid; place-items: center; padding: 16px; }
+.dialog { background: var(--panel-solid); border: 1px solid var(--gilt); border-radius: 8px; padding: 18px 20px; width: min(460px, 100%); max-height: calc(100% - 32px); overflow-y: auto; }
+.dialog h2 { font-family: var(--font-display); color: var(--gilt-hi); font-size: 20px; margin: 0 0 12px; }
+.field { display: grid; gap: 4px; margin-bottom: 12px; }
+.field label { color: var(--muted); font-size: 12px; }
+.field input, .field select, .field textarea { background: var(--input); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; color: var(--fg); width: 100%; }
+.field textarea { min-height: 110px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; resize: vertical; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row.end { justify-content: flex-end; margin-top: 6px; }
+.slot { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.slot .meta { color: var(--muted); font-size: 11.5px; }
+.slot b { font-weight: 500; }
+#toast { position: absolute; left: 50%; top: 64px; transform: translateX(-50%); z-index: 30; background: var(--panel-solid); border: 1px solid var(--gilt); border-radius: 4px; padding: 7px 14px; color: var(--gilt-hi); pointer-events: none; }
+#loading { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg); }
+#loading div { font-family: var(--font-display); color: var(--gilt-hi); font-size: 22px; letter-spacing: 0.2em; }
+#loading p { color: var(--muted); text-align: center; font-family: var(--font-ui); font-size: 12px; letter-spacing: 0; }
+
+@media (max-width: 1360px) { .brand small { display: none; } .totals { gap: 8px; font-size: 12px; } }
+@media (max-width: 1180px) { .totals .cost { display: none; } }
+@media (max-width: 760px) {
+  .totals, .brand small { display: none; }
+  #palette { width: 172px; top: auto; bottom: 120px; max-height: 40%; }
+  #info { width: calc(100% - 20px); max-height: 30%; top: auto; bottom: 230px; }
+  #info:empty { display: none; }
+  #minimap { width: 120px; height: 120px; }
+  #bottom { right: 150px; }
+}
+@media (prefers-reduced-motion: reduce) { #status.flash { animation: none; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="view" tabindex="0" aria-label="3Dワールド"></canvas>
+
+  <header id="topbar">
+    <div class="brand">築城記<small>Castellum</small></div>
+    <div class="clock" id="clock"><b>1</b>日目 09:00</div>
+    <div class="seg" id="speed" role="group" aria-label="ゲーム速度">
+      <button data-speed="0" title="一時停止 (Space)">❚❚</button>
+      <button data-speed="1" aria-pressed="true">1×</button>
+      <button data-speed="2">2×</button>
+      <button data-speed="4">4×</button>
+    </div>
+    <div class="seg" id="modeSeg" role="group" aria-label="モード">
+      <button data-mode="build" aria-pressed="true" title="建築・領地管理モード">建築</button>
+      <button data-mode="explore" title="一人称探索モード (F)">探索</button>
+    </div>
+    <select class="btn" id="overlay" title="地形の表示">
+      <option value="normal">地形：通常</option>
+      <option value="height">地形：標高</option>
+      <option value="build">地形：建築適性</option>
+      <option value="resource">地形：資源</option>
+    </select>
+    <div class="totals" id="totals"></div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnNew">新規マップ</button>
+    <button class="btn" id="btnSave">保存</button>
+    <button class="btn" id="btnLoad">読込</button>
+  </header>
+
+  <aside id="palette" aria-label="建築メニュー"></aside>
+  <aside id="info" aria-live="polite"></aside>
+
+  <div id="mapwrap">
+    <div class="cap"><span>領地図</span><span id="mapname"></span></div>
+    <canvas id="minimap" width="200" height="200" aria-label="ミニマップ"></canvas>
+  </div>
+
+  <div id="bottom">
+    <div id="status">領地へようこそ。</div>
+    <div id="hint"></div>
+  </div>
+
+  <div id="crosshair" hidden></div>
+  <div id="explore-card" hidden>
+    <h2>探索モード</h2>
+    <p>クリックで視点操作を開始<br>WASD 移動　Shift 走る　Space 跳ぶ　E 近くの城門を開閉<br>Esc で一時解除　F で建築モードへ戻る</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn primary" id="btnLock">歩き始める</button>
+      <button class="btn" id="btnBackBuild">建築モードへ</button>
+    </div>
+  </div>
+
+  <div id="toast" hidden></div>
+  <div id="modal" class="modal" hidden></div>
+  <div id="loading"><div>築城記<p id="loadmsg">地形を生成しています…</p></div></div>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
