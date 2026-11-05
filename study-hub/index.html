@@ -127,6 +127,20 @@ button.choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 .quiz-item .q { font-weight: 500; }
 .quiz-score { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
+/* 質問 */
+.ask { display: grid; gap: 8px; margin-top: 18px; padding-top: 4px; border-top: 1px dashed var(--line); }
+.ask textarea { min-height: 64px; }
+.qa { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; background: var(--bg); min-width: 0; }
+.qa-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.qa-q { font-weight: 700; margin: 0; white-space: pre-wrap; }
+.qa-a .md > :first-child { margin-top: 0; }
+.qa-ref { font-size: 12px; color: var(--muted); }
+.qa .btn-row button.btn { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+.s-asking { background: var(--accent-soft); color: var(--accent); }
+.s-answered { background: var(--code-bg); color: var(--muted); }
+.s-pending { background: var(--due-soft); color: var(--due); }
+.s-error { background: var(--due-soft); color: var(--due); }
+
 /* 実践 */
 .practice { display: grid; gap: 6px; }
 .practice .p-title { font-weight: 700; }
@@ -160,6 +174,7 @@ dialog::backdrop { background: rgb(0 0 0 / .35); }
       <a href="#review">復習<span class="count" id="due-count" hidden></span></a>
       <a href="#map">知識マップ</a>
       <a href="#log">配信一覧</a>
+      <a href="#questions">質問<span class="count" id="q-count" hidden></span></a>
       <a href="#practice">実践</a>
       <a href="#memo">学んだことメモ</a>
     </nav>
@@ -171,7 +186,7 @@ dialog::backdrop { background: rgb(0 0 0 / .35); }
 
 <script>
 // ---- 状態 ----
-const S = { entries: [], concepts: [], notes: [], practice: [], curriculum: null, ready: false, db: null, canWrite: true };
+const S = { entries: [], concepts: [], notes: [], practice: [], questions: [], curriculum: null, ready: false, db: null, canWrite: true, sample: undefined, mcp: undefined };
 const INTERVALS = [1, 3, 7, 14, 30, 60]; // 復習の間隔(日)。stage が上がるほど伸びる
 const AREA_FALLBACK = "その他";
 
@@ -224,7 +239,8 @@ const dueConcepts = () => S.concepts.filter((c) => c.nextReview && c.nextReview 
 function entryHTML(e, open = false) {
   const [label, cls] = KIND[e.kind] || ["配信", "kind-lesson"];
   const concepts = (e.concepts || []).map(conceptById).filter(Boolean);
-  return `<details class="entry"${open ? " open" : ""}>
+  const isOpen = openState[e.id] ?? open;
+  return `<details class="entry" data-entry="${esc(e.id)}"${isOpen ? " open" : ""}>
     <summary>
       <span class="entry-meta"><span class="kind ${cls}">${label}</span>${esc(fmtDate(e.date))} ${e.slot === "night" ? "夜" : e.slot === "noon" ? "昼" : ""}</span>
       <span class="entry-title">${esc(e.title)}</span>
@@ -236,8 +252,252 @@ function entryHTML(e, open = false) {
       ${(e.practice || []).length ? `<p class="sub-h">手を動かす</p>${e.practice.map((p) => `<div class="practice"><span class="p-title">${esc(p.title)}</span>${p.why ? `<span class="hint">${esc(p.why)}</span>` : ""}${(p.steps || []).length ? `<ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}</div>`).join("")}` : ""}
       ${(e.sources || []).length ? `<p class="sub-h">出典</p><ul class="md">${e.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a></li>`).join("")}</ul>` : ""}
       ${concepts.length ? `<p class="sub-h">この回の知識</p><div class="chips">${concepts.map((c) => `<button class="chip" data-concept="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : ""}
+      ${askPanelHTML("entry", e.id)}
     </div>
   </details>`;
+}
+
+// ---- 質問(読みながら浮かんだ疑問をその場で AI に聞く) ----
+const DEEP_TRIGGER = "trig_01T7n5xsTTARR7oURc73nBNS"; // 「今すぐ深掘り」の定期実行タスク(スケジュールなし、押したときだけ動く)
+const drafts = {};    // 書きかけの入力。再描画で消えないように欄ごとに持つ
+const openState = {}; // 配信カードの開閉
+const streaming = {}; // 回答を書いている途中の文章
+const qUi = {};       // 質問ごとの表示状態 { deepForm, msg, err, busy }
+let currentConcept = null;
+const QSTATUS = { asking: "回答中", answered: "回答済み", pending: "深掘り待ち", done: "深掘り済み", error: "回答できませんでした" };
+
+function questionsFor(refType, refId) {
+  return S.questions.filter((q) => q.refType === refType && q.refId === refId).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
+}
+function refTitleOf(refType, refId) {
+  if (refType === "entry") return S.entries.find((e) => e.id === refId)?.title || "";
+  if (refType === "concept") return conceptById(refId)?.name || "";
+  return "学習全体";
+}
+function askPanelHTML(refType, refId) {
+  const key = `ask-${refType}-${refId}`;
+  const qs = questionsFor(refType, refId);
+  return `<div class="ask">
+    <p class="sub-h" style="margin:8px 0 0">疑問を聞く</p>
+    ${qs.map((q) => questionHTML(q, false)).join("")}
+    ${S.sample === null
+      ? `<p class="hint">このページから AI に質問できない状態です。疑問は「学んだことメモ」に書いておくと、次の昼の講義で深掘りします。</p>`
+      : `<textarea id="${key}" data-draft="${key}" placeholder="読んでいて引っかかったことを、そのまま書いてください">${esc(drafts[key] || "")}</textarea>
+         <div class="btn-row"><button class="btn primary" data-ask="${esc(refType)}|${esc(refId)}">AIに聞く</button></div>
+         ${qUi[key]?.msg ? `<p class="msg err" style="margin:0">${esc(qUi[key].msg)}</p>` : ""}`}
+  </div>`;
+}
+function questionHTML(q, showRef) {
+  const ui = qUi[q.id] || {};
+  const ans = streaming[q.id] ?? q.answer;
+  const st = q.status || "answered";
+  let actions = "";
+  if (st === "answered") {
+    actions = ui.deepForm
+      ? `<p class="hint" style="margin:0">今わかったことを一言書いておくと、それを出発点に深掘りします(空でも大丈夫です)。</p>
+         <textarea id="und-${esc(q.id)}" data-draft="und-${esc(q.id)}" placeholder="例: 履歴はアプリ側が持つ、というところまでは分かった">${esc(drafts["und-" + q.id] || "")}</textarea>
+         <div class="btn-row"><button class="btn primary" data-deep="${esc(q.id)}"${ui.busy ? " disabled" : ""}>深掘りの題材にする</button><button class="btn" data-deepcancel="${esc(q.id)}">やめる</button></div>`
+      : `<div class="btn-row"><button class="btn" data-deepform="${esc(q.id)}">もっと深掘りしたい</button>${q.conceptId ? "" : `<button class="btn" data-card="${esc(q.id)}"${ui.busy ? " disabled" : ""}>知識カードにする</button>`}</div>`;
+  } else if (st === "pending") {
+    actions = `${q.understanding ? `<p class="qa-ref" style="margin:0">今わかったこと: ${esc(q.understanding)}</p>` : ""}
+      <p class="hint" style="margin:0">次の昼の講義(12:30ごろ)で深掘りします。${q.deepRequestedAt ? "今すぐの深掘りも依頼済みです。" : ""}</p>
+      ${S.mcp && !q.deepRequestedAt ? `<div class="btn-row"><button class="btn primary" data-deepnow="${esc(q.id)}"${ui.busy ? " disabled" : ""}>今すぐ深掘りを始める</button></div>` : ""}`;
+  } else if (st === "done" && q.resultEntry) {
+    actions = `<div class="btn-row"><button class="btn" data-open-entry="${esc(q.resultEntry)}">深掘りした配信を読む</button></div>`;
+  } else if (st === "error") {
+    actions = `<p class="msg err" style="margin:0">${esc(sampleErrorCopy(q.error))}</p>${S.sample ? `<div class="btn-row"><button class="btn" data-retry="${esc(q.id)}">もう一度聞く</button></div>` : ""}`;
+  }
+  return `<div class="qa">
+    <div class="qa-head">${showRef ? `<span class="qa-ref">${esc(fmtDate(q.createdAt))}・${esc(q.refTitle || refTitleOf(q.refType, q.refId))}</span>` : "<span></span>"}<span class="status-pill s-${esc(st)}">${QSTATUS[st] || ""}</span></div>
+    <p class="qa-q">Q. ${esc(q.text)}</p>
+    <div class="qa-a" id="qa-a-${esc(q.id)}">${ans ? md(ans) : st === "asking" ? `<p class="hint">考えています…</p>` : ""}</div>
+    ${q.conceptId && conceptById(q.conceptId) ? `<div class="chips"><span class="hint">知識カードにしました:</span><button class="chip" data-concept="${esc(q.conceptId)}">${esc(conceptById(q.conceptId).name)}</button></div>` : ""}
+    ${actions}
+    ${ui.msg ? `<p class="msg${ui.err ? " err" : ""}" style="margin:0">${esc(ui.msg)}</p>` : ""}
+  </div>`;
+}
+
+function sampleErrorCopy(code) {
+  switch (code) {
+    case "not_granted": case "sampling_disabled": case "not_declared": case "capability_disabled": case "capability_removed":
+      return "このページから AI に質問できない設定になっています。";
+    case "rate_limited": return "質問が続いたか、利用上限に達しました。少し時間をおいてからもう一度聞いてください。";
+    case "session_expired": return "claude.ai へのログインが切れています。ログインし直してからもう一度聞いてください。";
+    case "refused": return "この聞き方では答えられませんでした。言い方を変えて聞いてみてください。";
+    default: return "回答の途中で止まりました。もう一度聞いてください。";
+  }
+}
+function buildAskPrompt(refType, refId, text, qid) {
+  let ctx = "学習全体についての質問です(特定の教材はありません)。";
+  if (refType === "entry") {
+    const e = S.entries.find((x) => x.id === refId);
+    if (e) ctx = `配信「${e.title}」(${e.date})\n要約: ${e.summary || ""}\n本文:\n${(e.body || "").slice(0, 6000)}`;
+  } else if (refType === "concept") {
+    const c = conceptById(refId);
+    if (c) ctx = `知識カード「${c.name}」\n一言: ${c.oneLine || ""}\n説明:\n${c.detail || ""}`;
+  }
+  const known = S.concepts.map((c) => `- ${c.name}: ${c.oneLine || ""}`).join("\n").slice(0, 4000);
+  const prev = questionsFor(refType, refId).filter((q) => q.id !== qid && q.answer).slice(-3)
+    .map((q) => `Q: ${q.text}\nA: ${q.answer.slice(0, 800)}`).join("\n\n");
+  return `あなたは、AIとシステムを学んでいる人の家庭教師です。学習者は ChatGPT や Claude を使ってはいるが、仕組みはこれから学ぶ段階です。学習者が下の教材を読んでいて浮かんだ疑問に、日本語のです・ます調で答えてください。
+
+答え方:
+- 最初の1〜2文で、疑問への答えを先に言う
+- そのあと、仕組みや理由を短く説明する。たとえ話は1つまで
+- 学習者がすでに学んだ知識とつながるときは、その名前を出してつなげる
+- 疑問の中に誤解があれば、やさしく、はっきり直す
+- 全体で400〜700字。見出しは「### 」、箇条書きは「- 」、コードや用語は「\`」で囲む。それ以外の装飾は使わない
+- 確かでないことは、そう書く。断定しない
+- 最後に「次に考えてみるといいこと:」として、理解を深める問いを1つ書く
+
+# 教材
+${ctx}
+
+# 学習者がこれまでに学んだ知識
+${known || "(まだありません)"}
+${prev ? `\n# この教材についての、これまでの質問と答え\n${prev}\n` : ""}
+# 学習者の疑問
+${text}`;
+}
+
+// 回答を書いている途中は、その欄だけを書き換える(ページ全体を描き直すと入力中の文字が消えるため)
+function paintStream(qid) {
+  const el = document.getElementById("qa-a-" + qid);
+  if (el) el.innerHTML = md(streaming[qid] || "");
+}
+async function answerQuestion(ref, q) {
+  streaming[ref.id] = "";
+  render();
+  try {
+    const { text } = await S.sample(buildAskPrompt(q.refType, q.refId, q.text, ref.id), {
+      cache: false,
+      onText: ({ text }) => { streaming[ref.id] = text; paintStream(ref.id); },
+    });
+    await ref.update({ answer: text, status: "answered", answeredAt: new Date().toISOString(), error: null });
+  } catch (e) {
+    const code = e?.code || "upstream_error";
+    if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(code)) S.sample = null;
+    if (code !== "cancelled") await ref.update({ status: "error", error: code, answer: e?.text || "" }).catch(() => {});
+  } finally {
+    delete streaming[ref.id];
+    render();
+  }
+}
+async function ask(refType, refId) {
+  const key = `ask-${refType}-${refId}`;
+  const text = (drafts[key] || "").trim();
+  if (!text || !S.db) return;
+  if (!S.sample) { qUi[key] = { msg: "AI の準備がまだです。数秒待ってからもう一度押してください。", err: true }; render(); return; }
+  const ref = S.db.collection("questions").doc();
+  const q = { text, refType, refId, refTitle: refTitleOf(refType, refId), status: "asking", createdAt: new Date().toISOString() };
+  drafts[key] = "";
+  try { await ref.set(q); } catch (e) { drafts[key] = text; render(); return; }
+  await answerQuestion(ref, q);
+}
+async function retryQuestion(qid) {
+  const q = S.questions.find((x) => x.id === qid);
+  if (!q || !S.sample) return;
+  const ref = S.db.collection("questions").doc(qid);
+  await ref.update({ status: "asking", answer: "" }).catch(() => {});
+  await answerQuestion(ref, q);
+}
+
+async function makeCard(qid) {
+  const q = S.questions.find((x) => x.id === qid);
+  if (!q || !S.sample) return;
+  qUi[qid] = { busy: true, msg: "知識カードを作っています…" }; render();
+  const areas = (S.curriculum?.areas || []).map((a) => a.name).join("、");
+  const names = S.concepts.map((c) => `${c.id}(${c.name})`).join("、");
+  try {
+    const card = await S.sample.json(`次の「疑問と答え」から、復習用の知識カードを1枚作ってください。返すのは JSON のオブジェクト1つだけです。
+
+形式:
+{"id":"英小文字・数字・ハイフンのid","name":"表示名(20字以内)","area":"分野名","oneLine":"一言でいうと(40字以内)","detail":"説明(200〜400字。- の箇条書き可)","reviewQ":"復習で出す問い","reviewChoices":["選択肢","選択肢","選択肢","選択肢"],"reviewAnswer":0,"reviewA":"正解とその理由(1〜2文)"}
+
+決まり:
+- area は次のどれかと同じ表記にする: ${areas || "その他"}
+- reviewChoices はちょうど4つ。間違いの選択肢は「ありがちな誤解」にする。正解の位置 reviewAnswer(0〜3)は偏らせない
+- 学習者は AI を使ってはいるが仕組みはこれから学ぶ段階。です・ます調で書く
+- すでにある知識と同じものは作らない。近いものがあるなら、違いが分かる名前と説明にする。すでにある知識: ${names}
+
+# 疑問
+${q.text}
+
+# 答え
+${(q.answer || "").slice(0, 3000)}`, { cache: false });
+    const ok = card && typeof card.name === "string" && typeof card.oneLine === "string" && Array.isArray(card.reviewChoices) && card.reviewChoices.length === 4
+      && Number.isInteger(card.reviewAnswer) && card.reviewAnswer >= 0 && card.reviewAnswer < 4;
+    if (!ok) throw { code: "invalid_json" };
+    let id = String(card.id || "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    if (!id || conceptById(id)) id = (id || "q") + "-" + Date.now().toString(36);
+    const today = todayISO();
+    const related = q.refType === "concept" ? [q.refId] : q.refType === "entry" ? (S.entries.find((e) => e.id === q.refId)?.concepts || []).slice(0, 3) : [];
+    await S.db.collection("concepts").doc(id).set({
+      name: card.name.slice(0, 40), area: String(card.area || AREA_FALLBACK), oneLine: card.oneLine.slice(0, 80), detail: String(card.detail || ""),
+      reviewQ: String(card.reviewQ || `「${card.name}」とは何か?`), reviewChoices: card.reviewChoices.map(String), reviewAnswer: card.reviewAnswer, reviewA: String(card.reviewA || ""),
+      related, status: "new", stage: 0, firstSeen: today, nextReview: addDays(today, 1),
+      entryIds: q.refType === "entry" ? [q.refId] : [], fromQuestion: qid,
+    });
+    await S.db.collection("questions").doc(qid).update({ conceptId: id });
+    qUi[qid] = { msg: "知識カードにしました。明日から復習に出ます。" };
+  } catch (e) {
+    qUi[qid] = { msg: e?.code === "invalid_json" ? "カードをうまく作れませんでした。もう一度押してください。" : sampleErrorCopy(e?.code), err: true };
+  }
+  render();
+}
+
+async function markDeep(qid) {
+  const understanding = (drafts["und-" + qid] || "").trim();
+  qUi[qid] = { busy: true }; render();
+  try {
+    await S.db.collection("questions").doc(qid).update({ status: "pending", understanding, deepAskedAt: new Date().toISOString() });
+    delete drafts["und-" + qid];
+    qUi[qid] = { msg: S.mcp ? "深掘りの題材にしました。すぐ読みたいときは「今すぐ深掘りを始める」を押してください。" : "深掘りの題材にしました。次の昼の講義で扱います。" };
+  } catch (e) {
+    qUi[qid] = { deepForm: true, msg: "保存できませんでした。もう一度押してください。", err: true };
+  }
+  render();
+}
+
+function mcpErrorCopy(e) {
+  switch (e?.code) {
+    case "approval_required": case "consent_required": case "not_granted":
+      return "今すぐの深掘りには実行の許可が必要です。確認が出たら「許可」を押してください。許可しなくても、次の昼の講義で深掘りします。";
+    case "server_not_connected": case "server_not_found":
+      return "Claude Code Remote のコネクタがつながっていないため、今すぐは始められません。次の昼の講義で深掘りします。";
+    case "needs_reauth": return "コネクタの再接続が必要です(claude.ai の設定 → コネクタ)。次の昼の講義では深掘りされます。";
+    case "tool_error": return "起動に失敗しました。次の昼の講義で深掘りします。";
+    case "server_unavailable": case "upstream_error":
+      return "起動できたか確認できませんでした。数分たっても配信一覧に届かなければ、もう一度押してください。";
+    default: return "今すぐは始められませんでした。次の昼の講義で深掘りします。";
+  }
+}
+async function deepNow(qid) {
+  if (!S.mcp) return;
+  qUi[qid] = { busy: true, msg: "深掘りを依頼しています…" }; render();
+  try {
+    await S.mcp.callTool("Claude Code Remote", "fire_trigger", { trigger_id: DEEP_TRIGGER, text: `質問ID: ${qid}` });
+    await S.db.collection("questions").doc(qid).update({ deepRequestedAt: new Date().toISOString() }).catch(() => {});
+    qUi[qid] = { msg: "深掘りを始めました。数分で配信一覧に届き、スマホにも通知が来ます。" };
+  } catch (e) {
+    qUi[qid] = { msg: mcpErrorCopy(e), err: e?.code !== "server_unavailable" && e?.code !== "upstream_error" };
+  }
+  render();
+}
+
+function viewQuestions() {
+  const by = (s) => S.questions.filter((q) => (q.status || "answered") === s).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  const pending = by("pending"), answered = [...by("answered"), ...by("asking"), ...by("error")], done = by("done");
+  const block = (title, list, hint) => `<section class="stack"><div class="section-head"><h2>${title}</h2><span class="hint">${list.length} 件</span></div>
+    ${list.length ? list.map((q) => questionHTML(q, true)).join("") : `<div class="empty">${hint}</div>`}</section>`;
+  return `<section class="panel stack">
+      <h2>疑問を聞く</h2>
+      <p class="hint" style="margin:0">特定の配信に関係ない疑問はここに。配信や知識カードを読んでいる途中なら、その下の「疑問を聞く」から聞くと、教材を踏まえて答えます。</p>
+      ${askPanelHTML("free", "general").replace('<p class="sub-h" style="margin:8px 0 0">疑問を聞く</p>', "")}
+    </section>
+    ${block("深掘り待ち", pending, "「もっと深掘りしたい」を押した疑問がここに並び、次の昼の講義の題材になります。")}
+    ${block("回答済み", answered, "まだ質問はありません。")}
+    ${block("深掘り済み", done, "深掘りが終わった疑問がここに並びます。")}`;
 }
 
 // 選択式の問題。選んだ答えはページを開いている間だけ覚えておく(採点は記録しない)
@@ -276,6 +536,7 @@ function viewToday() {
   const latest = todays.length ? todays : S.entries.slice(0, 2);
   const due = dueConcepts();
   const pending = S.notes.filter((n) => n.status === "pending");
+  const pendingQs = S.questions.filter((q) => q.status === "pending");
   const doing = S.practice.filter((p) => p.status !== "done").slice(0, 2);
   return `
     <section class="stack">
@@ -287,8 +548,11 @@ function viewToday() {
       ${due.length ? `<p class="hint">${due.length} 件が復習の時期です: ${due.slice(0, 5).map((c) => esc(c.name)).join("、")}${due.length > 5 ? " ほか" : ""}</p>` : `<p class="hint">今日復習するものはありません。</p>`}
     </section>
     <section class="panel stack">
-      <div class="section-head"><h2>次に深掘りするメモ</h2><a href="#memo" class="hint">メモを書く</a></div>
-      ${pending.length ? pending.map((n) => `<p style="margin:0">・${esc(n.text.slice(0, 80))}${n.text.length > 80 ? "…" : ""}</p>`).join("") : `<p class="hint">学んだことを書いておくと、次の昼の配信で深掘りして知識マップに組み込みます。</p>`}
+      <div class="section-head"><h2>次に深掘りすること</h2><a href="#memo" class="hint">メモを書く</a></div>
+      ${pending.length || pendingQs.length
+        ? [...pending.map((n) => `<p style="margin:0">・メモ: ${esc(n.text.slice(0, 80))}${n.text.length > 80 ? "…" : ""}</p>`),
+           ...pendingQs.map((q) => `<p style="margin:0">・疑問: <a href="#questions">${esc(q.text.slice(0, 80))}${q.text.length > 80 ? "…" : ""}</a></p>`)].join("")
+        : `<p class="hint">学んだことのメモや、「もっと深掘りしたい」を押した疑問が、次の昼の講義の題材になります。</p>`}
     </section>
     ${doing.length ? `<section class="stack"><div class="section-head"><h2>進行中の実践</h2><a href="#practice" class="hint">すべて見る</a></div>${doing.map(practiceHTML).join("")}</section>` : ""}
   `;
@@ -411,7 +675,7 @@ function viewMemo() {
   </section>`;
 }
 
-const VIEWS = { today: viewToday, review: viewReview, map: viewMap, log: viewLog, practice: viewPractice, memo: viewMemo };
+const VIEWS = { today: viewToday, review: viewReview, map: viewMap, log: viewLog, questions: viewQuestions, practice: viewPractice, memo: viewMemo };
 function currentView() { const h = location.hash.slice(1); return VIEWS[h] ? h : "today"; }
 
 function render() {
@@ -423,17 +687,37 @@ function render() {
   const dc = document.getElementById("due-count");
   dc.hidden = !due; dc.textContent = due;
   document.getElementById("stats").textContent = S.ready ? `配信 ${S.entries.length}・知識 ${S.concepts.length}・実践 ${S.practice.filter((p) => p.status === "done").length}/${S.practice.length}` : "読み込み中…";
-  // 入力中の検索欄はフォーカスを保つ
-  const focusLog = document.activeElement?.id === "log-q";
-  const caret = focusLog ? document.activeElement.selectionStart : null;
+  const qc = document.getElementById("q-count");
+  const pq = S.questions.filter((q) => q.status === "pending").length;
+  qc.hidden = !pq; qc.textContent = pq;
+  // 入力中の欄はフォーカスとカーソル位置を保つ
+  const ae = document.activeElement;
+  const fid = ae && ae.id && (ae.tagName === "TEXTAREA" || ae.tagName === "INPUT") ? ae.id : null;
+  const sel = fid ? [ae.selectionStart, ae.selectionEnd] : null;
   document.getElementById("view").innerHTML = VIEWS[v]();
-  if (focusLog) { const i = document.getElementById("log-q"); i.focus(); i.setSelectionRange(caret, caret); }
+  if (document.getElementById("concept-dialog").open && currentConcept) renderConceptDialog();
+  if (fid) { const n = document.getElementById(fid); if (n) { n.focus(); try { n.setSelectionRange(sel[0], sel[1]); } catch (_) {} } }
 }
 
 // ---- 操作 ----
 document.addEventListener("click", async (ev) => {
-  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],[data-rpick],[data-qkey],#reveal,#memo-save,#concept-close,[data-goto]");
+  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],[data-rpick],[data-qkey],#reveal,#memo-save,#concept-close,[data-goto],[data-ask],[data-retry],[data-card],[data-deepform],[data-deep],[data-deepcancel],[data-deepnow],[data-open-entry]");
   if (!t) return;
+  if (t.dataset.ask) { const [rt, ...rest] = t.dataset.ask.split("|"); t.disabled = true; await ask(rt, rest.join("|")); return; }
+  if (t.dataset.retry) { await retryQuestion(t.dataset.retry); return; }
+  if (t.dataset.card) { await makeCard(t.dataset.card); return; }
+  if (t.dataset.deepform) { qUi[t.dataset.deepform] = { deepForm: true }; render(); document.getElementById("und-" + t.dataset.deepform)?.focus(); return; }
+  if (t.dataset.deepcancel) { qUi[t.dataset.deepcancel] = {}; render(); return; }
+  if (t.dataset.deep) { await markDeep(t.dataset.deep); return; }
+  if (t.dataset.deepnow) { await deepNow(t.dataset.deepnow); return; }
+  if (t.dataset.openEntry) {
+    const id = t.dataset.openEntry;
+    document.getElementById("concept-dialog").close();
+    openState[id] = true; logKind = ""; logQuery = "";
+    if (location.hash !== "#log") location.hash = "#log"; else render();
+    setTimeout(() => document.querySelector(`[data-entry="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "start" }), 50);
+    return;
+  }
   if (t.dataset.rpick != null) { rv.picked = Number(t.dataset.rpick); render(); return; }
   if (t.dataset.qkey) { quizPicks[t.dataset.qkey] = Number(t.dataset.pick); render(); return; }
   if (t.dataset.concept) { ev.preventDefault(); openConcept(t.dataset.concept); return; }
@@ -446,10 +730,23 @@ document.addEventListener("click", async (ev) => {
   if (t.dataset.pstatus) { await setPracticeStatus(t.dataset.pid, t.dataset.pstatus); return; }
   if (t.id === "memo-save") { await saveMemo(); return; }
 });
-document.addEventListener("input", (ev) => { if (ev.target.id === "log-q") { logQuery = ev.target.value; render(); } });
+document.addEventListener("input", (ev) => {
+  if (ev.target.dataset?.draft) { drafts[ev.target.dataset.draft] = ev.target.value; return; }
+  if (ev.target.id === "log-q") { logQuery = ev.target.value; render(); }
+});
+// 配信カードの開閉を覚えておき、データ更新で描き直しても閉じないようにする
+document.addEventListener("toggle", (ev) => { const d = ev.target; if (d?.dataset?.entry) openState[d.dataset.entry] = d.open; }, true);
 window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
 
 function openConcept(id) {
+  if (!conceptById(id)) return;
+  currentConcept = id;
+  renderConceptDialog();
+  const dlg = document.getElementById("concept-dialog");
+  if (!dlg.open) dlg.showModal();
+}
+function renderConceptDialog() {
+  const id = currentConcept;
   const c = conceptById(id);
   if (!c) return;
   const related = (c.related || []).map(conceptById).filter(Boolean);
@@ -461,9 +758,8 @@ function openConcept(id) {
     ${md(c.detail)}
     ${related.length ? `<p class="sub-h">つながる知識</p><div class="chips">${related.map((r) => `<button class="chip" data-concept="${esc(r.id)}">${esc(r.name)}</button>`).join("")}</div>` : ""}
     ${entries.length ? `<p class="sub-h">登場した配信</p><ul class="md">${entries.map((e) => `<li>${esc(fmtDate(e.date))} ${esc(e.title)}</li>`).join("")}</ul>` : ""}
-    <p class="hint" style="margin-top:10px">${c.firstSeen ? `初めて学んだ日: ${esc(fmtDate(c.firstSeen))}` : ""}${c.nextReview ? `・次の復習: ${esc(fmtDate(c.nextReview))}` : ""}</p>`;
-  const dlg = document.getElementById("concept-dialog");
-  if (!dlg.open) dlg.showModal();
+    <p class="hint" style="margin-top:10px">${c.firstSeen ? `初めて学んだ日: ${esc(fmtDate(c.firstSeen))}` : ""}${c.nextReview ? `・次の復習: ${esc(fmtDate(c.nextReview))}` : ""}</p>
+    ${askPanelHTML("concept", id)}`;
 }
 
 async function grade(g) {
@@ -524,6 +820,10 @@ async function boot() {
   subscribe("concepts", (rows) => { S.concepts = rows; });
   subscribe("notes", (rows) => { S.notes = rows; });
   subscribe("practice", (rows) => { S.practice = rows; });
+  subscribe("questions", (rows) => { S.questions = rows; });
+  // AI への質問(sample)と、今すぐ深掘りの起動(mcp)は、使えるときだけ表示する
+  window.claude.use("sample").then((s) => { S.sample = s; render(); }, () => { S.sample = null; render(); });
+  window.claude.use("mcp").then((m) => { S.mcp = m; render(); }, () => { S.mcp = null; render(); });
   db.doc("meta/curriculum").onSnapshot((d) => { S.curriculum = d.exists ? d.data() : null; render(); }, () => {});
 }
 boot();

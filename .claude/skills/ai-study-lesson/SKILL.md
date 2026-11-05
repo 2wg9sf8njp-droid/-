@@ -16,6 +16,7 @@ description: 毎日お昼(12:30ごろ)に届けるAI・システムの勉強パ�
 学習帳(https://claude.ai/artifact/1hcwDxrA9z3uko6KKR1xgu)から次のものを読む:
 
 - `notes` を `status == "pending"` で query
+- `questions` を `status == "pending"` で query(ユーザーが「もっと深掘りしたい」を選んだ疑問)
 - `meta/curriculum`
 - `concepts` を全件 list(id の重複を避け、つながりを作るため)
 - `practice` で `status == "done"` のもの(最近の数件)
@@ -25,7 +26,7 @@ description: 毎日お昼(12:30ごろ)に届けるAI・システムの勉強パ�
 
 優先順位:
 
-1. **pending のメモがある** → 深掘り(`kind: "deepdive"`)。メモが複数あるなら、古いものから、関連するものはまとめて1回で扱う。ユーザーが自分で書いた学びは、カリキュラムより大事。
+1. **pending のメモ、または pending の疑問がある** → 深掘り(`kind: "deepdive"`)。複数あるなら古いものから、関連するものはまとめて1回で扱う。ユーザーが自分で書いた学びや疑問は、カリキュラムより大事。疑問は、AI の即答(`answer`)とユーザーの「今わかったこと」(`understanding`)を読んだうえで、その先へ進める(即答の繰り返しにしない)。
 2. **メモが無い** → カリキュラムの「次の回」の講義(`kind: "lesson"`)。最近の done の実践課題や、メモで見えた関心に強く関わる回が後ろにあれば、先にしてよい。
 3. **日曜日** → 1か2に加えて、本文の最後に `### 今週のまとめ` を付ける。その週の entries を見て、つながりを短くまとめる。
 
@@ -47,7 +48,7 @@ description: 毎日お昼(12:30ごろ)に届けるAI・システムの勉強パ�
 - 新しい知識を `concepts` に set(1回に2〜4個。`related` で既存とつなぐ)。既存の知識が再登場したら update で `entryIds` と `related` に追加
 - 出題した復習知識を update(stage+1、nextReview を進める。計算は schema.md)
 - `practice` に新しい課題を set
-- 深掘りしたメモを update(`status: "done"`, `resultEntry`)
+- 深掘りしたメモ・疑問を update(`status: "done"`, `resultEntry`)
 - 扱ったカリキュラムの回を `meta/curriculum` で `status: "done"`, `entryId` に update(areas 配列ごと書き換える。読んだ version を if_version に渡す)
 
 書き込みが失敗したら、エラー内容を読んで直し、もう一度書く。成功したことを確かめずに「記録しました」と言わない。

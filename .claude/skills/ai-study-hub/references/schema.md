@@ -79,6 +79,31 @@ id は英小文字とハイフン(例: `context-window`)。既存の id を `lis
 
 深掘りしたら `status: "done"` と `resultEntry` を `update` で書く。`text` は書き換えない。
 
+## questions/<id> — 読みながら浮かんだ疑問
+
+ページの「疑問を聞く」から書かれ、ページが AI(sample)で即答して保存する。id は自動で付く。
+
+```json
+{
+  "text": "疑問の本文",
+  "refType": "entry | concept | free",
+  "refId": "対象の entries / concepts の id(free は \"general\")",
+  "refTitle": "対象のタイトル",
+  "status": "asking | answered | error | pending | done",
+  "answer": "AI の即答(Markdown)",
+  "understanding": "ユーザーが書いた「今わかったこと」(深掘りを頼んだときだけ。空のこともある)",
+  "conceptId": "「知識カードにする」で作られた concepts の id",
+  "deepAskedAt": "深掘りの題材にした日時",
+  "deepRequestedAt": "「今すぐ深掘り」を押した日時",
+  "resultEntry": "深掘りした entries の id",
+  "createdAt": "…"
+}
+```
+
+- `status: "pending"` は、ユーザーが「もっと深掘りしたい」を選んだ疑問。notes の pending と同じく、次の講義(または「今すぐ深掘り」タスク)の題材にする。`text`・`answer`・`understanding` を読み、即答の内容を繰り返すのではなく、その先(理由、つながり、アプリでの使い方、手を動かす課題)へ進める。
+- 深掘りしたら `status: "done"` と `resultEntry` を update で書く。`text` と `answer` は書き換えない。
+- 「知識カードにする」で作られた concepts は、`fromQuestion` に質問の id を持つ。
+
 ## practice/<id> — 実践課題
 
 ```json
