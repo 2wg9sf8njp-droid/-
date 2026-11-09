@@ -127,6 +127,12 @@ button.choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 .quiz-item .q { font-weight: 500; }
 .quiz-score { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
+/* 読了 */
+.read-mark { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--ok); }
+.unread-mark { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--accent); }
+.unread-mark::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 4px; vertical-align: 1px; }
+.read-row { margin-top: 16px; align-items: center; }
+
 /* 質問 */
 .ask { display: grid; gap: 8px; margin-top: 18px; padding-top: 4px; border-top: 1px dashed var(--line); }
 .ask textarea { min-height: 64px; }
@@ -234,6 +240,16 @@ function md(src) {
 
 const conceptById = (id) => S.concepts.find((c) => c.id === id);
 const dueConcepts = () => S.concepts.filter((c) => c.nextReview && c.nextReview <= todayISO()).sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+// 復習は1日に出す数に上限を設ける。溜まっていても見せるのは今日の分だけにして、余裕があるときだけ先へ進める
+const DAILY_REVIEW = 10;
+let reviewExtra = false;
+const reviewedTodayCount = () => S.concepts.filter((c) => c.reviewedOn === todayISO()).length;
+function reviewQueue() {
+  const due = dueConcepts();
+  return reviewExtra ? due : due.slice(0, Math.max(0, DAILY_REVIEW - reviewedTodayCount()));
+}
+const isRead = (e) => !!e.readAt;
+const unreadEntries = () => S.entries.filter((e) => !isRead(e));
 
 // ---- 表示 ----
 function entryHTML(e, open = false) {
@@ -242,7 +258,7 @@ function entryHTML(e, open = false) {
   const isOpen = openState[e.id] ?? open;
   return `<details class="entry" data-entry="${esc(e.id)}"${isOpen ? " open" : ""}>
     <summary>
-      <span class="entry-meta"><span class="kind ${cls}">${label}</span>${esc(fmtDate(e.date))} ${e.slot === "night" ? "夜" : e.slot === "noon" ? "昼" : ""}</span>
+      <span class="entry-meta"><span class="kind ${cls}">${label}</span>${esc(fmtDate(e.date))} ${e.slot === "night" ? "夜" : e.slot === "noon" ? "昼" : ""}${isRead(e) ? `<span class="read-mark">✓ 読了</span>` : `<span class="unread-mark">未読</span>`}</span>
       <span class="entry-title">${esc(e.title)}</span>
       ${e.summary ? `<span class="entry-sum">${esc(e.summary)}</span>` : ""}
     </summary>
@@ -252,6 +268,9 @@ function entryHTML(e, open = false) {
       ${(e.practice || []).length ? `<p class="sub-h">手を動かす</p>${e.practice.map((p) => `<div class="practice"><span class="p-title">${esc(p.title)}</span>${p.why ? `<span class="hint">${esc(p.why)}</span>` : ""}${(p.steps || []).length ? `<ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}</div>`).join("")}` : ""}
       ${(e.sources || []).length ? `<p class="sub-h">出典</p><ul class="md">${e.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a></li>`).join("")}</ul>` : ""}
       ${concepts.length ? `<p class="sub-h">この回の知識</p><div class="chips">${concepts.map((c) => `<button class="chip" data-concept="${esc(c.id)}">${esc(c.name)}</button>`).join("")}</div>` : ""}
+      <div class="btn-row read-row">${isRead(e)
+        ? `<span class="hint">${esc(fmtDate(e.readAt))} に読了</span><button class="btn" data-read="${esc(e.id)}" data-val="0">未読に戻す</button>`
+        : `<button class="btn primary" data-read="${esc(e.id)}" data-val="1">読了にする</button>`}</div>
       ${askPanelHTML("entry", e.id)}
     </div>
   </details>`;
@@ -534,18 +553,29 @@ function viewToday() {
   const today = todayISO();
   const todays = S.entries.filter((e) => e.date === today);
   const latest = todays.length ? todays : S.entries.slice(0, 2);
-  const due = dueConcepts();
+  // 今日の分より前の読み残しは、古い順に3件まで出す(続きから読めるように)
+  const leftover = unreadEntries().filter((e) => !latest.includes(e)).reverse();
+  const queue = reviewQueue(), doneToday = reviewedTodayCount(), backlog = dueConcepts().length > queue.length;
   const pending = S.notes.filter((n) => n.status === "pending");
   const pendingQs = S.questions.filter((q) => q.status === "pending");
   const doing = S.practice.filter((p) => p.status !== "done").slice(0, 2);
   return `
     <section class="stack">
       <div class="section-head"><h2>${todays.length ? "今日の配信" : "最新の配信"}</h2><span class="hint">昼 12:30 講義 / 夜 20:30 ニュース</span></div>
-      ${latest.length ? latest.map((e, i) => entryHTML(e, i === 0)).join("") : `<div class="empty">まだ配信がありません。12:30 に最初の講義が届くと、ここに表示されます。</div>`}
+      ${latest.length ? latest.map((e, i) => entryHTML(e, i === 0 && !isRead(e))).join("") : `<div class="empty">まだ配信がありません。12:30 に最初の講義が届くと、ここに表示されます。</div>`}
     </section>
+    ${leftover.length ? `<section class="stack">
+      <div class="section-head"><h2>読み残し</h2>${leftover.length > 3 ? `<button class="chip" data-goto-unread>ほか ${leftover.length - 3} 件を見る</button>` : ""}</div>
+      ${leftover.slice(0, 3).map((e) => entryHTML(e)).join("")}
+    </section>` : ""}
     <section class="panel stack">
       <div class="section-head"><h2>今日の復習</h2><a href="#review" class="hint">復習タブへ</a></div>
-      ${due.length ? `<p class="hint">${due.length} 件が復習の時期です: ${due.slice(0, 5).map((c) => esc(c.name)).join("、")}${due.length > 5 ? " ほか" : ""}</p>` : `<p class="hint">今日復習するものはありません。</p>`}
+      <div class="bar"><i style="width:${Math.min(100, Math.round((doneToday / DAILY_REVIEW) * 100))}%"></i></div>
+      <p class="hint" style="margin:0">${queue.length && doneToday >= DAILY_REVIEW
+        ? `今日の分は終わっています。おかわりで、あと ${queue.length} 問まで進められます。`
+        : queue.length
+        ? `今日はあと ${Math.min(queue.length, DAILY_REVIEW - doneToday)} 問です(1日 ${DAILY_REVIEW} 問まで)。`
+        : doneToday ? `今日の分は終わりました。おつかれさまでした。` : `今日復習するものはありません。`}${!queue.length && backlog ? " 余裕があるときは、復習タブから先の分にも進めます。" : ""}</p>
     </section>
     <section class="panel stack">
       <div class="section-head"><h2>次に深掘りすること</h2><a href="#memo" class="hint">メモを書く</a></div>
@@ -561,10 +591,20 @@ function viewToday() {
 // 復習カードの状態。カードの id ごとに持つので、次のカードへ進むと必ず未回答から始まる
 let rv = { id: null, picked: null, revealed: false, sessionDone: 0 };
 function viewReview() {
-  const due = dueConcepts();
+  const due = reviewQueue();
+  const doneToday = reviewedTodayCount(), allDue = dueConcepts().length;
+  const progress = `<div class="section-head"><span class="entry-meta">今日 ${doneToday} / ${DAILY_REVIEW} 問</span>${reviewExtra ? `<span class="entry-meta">おかわり中</span>` : ""}</div>
+    <div class="bar"><i style="width:${Math.min(100, Math.round((doneToday / DAILY_REVIEW) * 100))}%"></i></div>`;
   if (!due.length) {
+    if (allDue) {
+      // 今日の上限に達した。残りは義務にしない
+      return `<section class="panel stack">${progress}<h2>今日の分は完了です</h2>
+        <p class="hint" style="margin:0">1日 ${DAILY_REVIEW} 問できれば十分です。残りは明日以降に少しずつ出てきます。</p>
+        <p class="hint" style="margin:0">余裕があるときは、先の分を進めて追いつくこともできます。</p>
+        <div class="btn-row"><button class="btn" data-review-extra>もう少しやる(残り ${allDue} 問)</button></div></section>`;
+    }
     const next = S.concepts.filter((c) => c.nextReview).sort((a, b) => a.nextReview.localeCompare(b.nextReview))[0];
-    return `<section class="panel stack"><h2>復習</h2><p class="hint">${rv.sessionDone ? `${rv.sessionDone} 問の復習が終わりました。` : ""}今日の復習はすべて終わりました。${next ? `次は ${esc(fmtDate(next.nextReview))} に「${esc(next.name)}」です。` : ""}</p></section>`;
+    return `<section class="panel stack">${progress}<h2>復習</h2><p class="hint">${rv.sessionDone ? `${rv.sessionDone} 問の復習が終わりました。` : ""}今日の復習はすべて終わりました。${next ? `次は ${esc(fmtDate(next.nextReview))} に「${esc(next.name)}」です。` : ""}</p></section>`;
   }
   const c = due[0];
   if (rv.id !== c.id) rv = { id: c.id, picked: null, revealed: false, sessionDone: rv.sessionDone };
@@ -590,7 +630,8 @@ function viewReview() {
         <div class="btn-row"><button class="btn primary" id="reveal">答えを見る</button></div>`;
   }
   return `<section class="panel card-review">
-    <div class="section-head"><span class="entry-meta">残り ${due.length} 問・${esc(c.area || AREA_FALLBACK)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || ""}</span></div>
+    ${progress}
+    <div class="section-head"><span class="entry-meta">${reviewExtra ? `残り ${due.length} 問` : `今日はあと ${due.length} 問`}・${esc(c.area || AREA_FALLBACK)}</span><span class="st st-${c.status || "new"}">${STATUS[c.status] || ""}</span></div>
     <p class="q">${esc(q)}</p>
     ${body}
     <p class="msg" id="review-msg"></p>
@@ -631,11 +672,12 @@ function viewMap() {
 let logKind = "", logQuery = "";
 function viewLog() {
   const q = logQuery.trim().toLowerCase();
-  const list = S.entries.filter((e) => (!logKind || e.kind === logKind) && (!q || [e.title, e.summary, e.body, ...(e.tags || [])].join(" ").toLowerCase().includes(q)));
+  const list = S.entries.filter((e) => (!logKind || (logKind === "unread" ? !isRead(e) : e.kind === logKind)) && (!q || [e.title, e.summary, e.body, ...(e.tags || [])].join(" ").toLowerCase().includes(q)));
+  const unread = unreadEntries().length;
   return `<section class="stack">
     <div class="section-head"><h2>配信一覧</h2><span class="hint">${list.length} 件</span></div>
     <input type="search" id="log-q" placeholder="キーワードで探す(例: git、サンドボックス)" value="${esc(logQuery)}">
-    <div class="chips">${[["", "すべて"], ["lesson", "講義"], ["deepdive", "深掘り"], ["news", "ニュース"]].map(([k, l]) => `<button class="chip${logKind === k ? " active" : ""}" data-kind="${k}">${l}</button>`).join("")}</div>
+    <div class="chips">${[["", "すべて"], ["unread", `未読 ${unread}`], ["lesson", "講義"], ["deepdive", "深掘り"], ["news", "ニュース"]].map(([k, l]) => `<button class="chip${logKind === k ? " active" : ""}" data-kind="${k}">${l}</button>`).join("")}</div>
     ${list.length ? list.map((e) => entryHTML(e)).join("") : `<div class="empty">該当する配信はありません。</div>`}
   </section>`;
 }
@@ -683,7 +725,7 @@ function render() {
   document.querySelectorAll("#tabs a").forEach((a) => {
     if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
-  const due = dueConcepts().length;
+  const due = reviewQueue().length;
   const dc = document.getElementById("due-count");
   dc.hidden = !due; dc.textContent = due;
   document.getElementById("stats").textContent = S.ready ? `配信 ${S.entries.length}・知識 ${S.concepts.length}・実践 ${S.practice.filter((p) => p.status === "done").length}/${S.practice.length}` : "読み込み中…";
@@ -701,9 +743,12 @@ function render() {
 
 // ---- 操作 ----
 document.addEventListener("click", async (ev) => {
-  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],[data-rpick],[data-qkey],#reveal,#memo-save,#concept-close,[data-goto],[data-ask],[data-retry],[data-card],[data-deepform],[data-deep],[data-deepcancel],[data-deepnow],[data-open-entry]");
+  const t = ev.target.closest("[data-concept],[data-area],[data-kind],[data-grade],[data-pstatus],[data-rpick],[data-qkey],#reveal,#memo-save,#concept-close,[data-goto],[data-read],[data-review-extra],[data-goto-unread],[data-ask],[data-retry],[data-card],[data-deepform],[data-deep],[data-deepcancel],[data-deepnow],[data-open-entry]");
   if (!t) return;
   if (t.dataset.ask) { const [rt, ...rest] = t.dataset.ask.split("|"); t.disabled = true; await ask(rt, rest.join("|")); return; }
+  if (t.dataset.read) { await setRead(t.dataset.read, t.dataset.val === "1"); return; }
+  if (t.hasAttribute("data-review-extra")) { reviewExtra = true; render(); return; }
+  if (t.hasAttribute("data-goto-unread")) { logKind = "unread"; logQuery = ""; if (location.hash !== "#log") location.hash = "#log"; else render(); return; }
   if (t.dataset.retry) { await retryQuestion(t.dataset.retry); return; }
   if (t.dataset.card) { await makeCard(t.dataset.card); return; }
   if (t.dataset.deepform) { qUi[t.dataset.deepform] = { deepForm: true }; render(); document.getElementById("und-" + t.dataset.deepform)?.focus(); return; }
@@ -769,7 +814,7 @@ async function grade(g) {
   if (g === "good") stage = Math.min(stage + 1, INTERVALS.length - 1);
   else if (g === "again") stage = 0;
   const days = g === "hard" ? 1 : INTERVALS[stage];
-  const patch = { stage, nextReview: addDays(todayISO(), days), lastReviewed: todayISO(), status: stage >= 4 ? "solid" : "learning", reviewCount: (c.reviewCount || 0) + 1, lastGrade: g };
+  const patch = { stage, nextReview: addDays(todayISO(), days), lastReviewed: todayISO(), reviewedOn: todayISO(), status: stage >= 4 ? "solid" : "learning", reviewCount: (c.reviewCount || 0) + 1, lastGrade: g };
   // 書き込みを待たずに次のカードへ進める(保存の反映で前のカードの答えが残らないように、状態を先に戻す)
   const prev = { ...rv };
   Object.assign(c, patch);
@@ -783,6 +828,19 @@ async function grade(g) {
     const msg = document.getElementById("review-msg");
     if (msg) { msg.textContent = "保存できませんでした。通信状況を確認して、もう一度押してください。"; msg.className = "msg err"; }
   }
+}
+
+// 読了にしたらカードを閉じ、見出しが見える位置に戻す(一覧で次に読むものが分かるように)
+async function setRead(id, read) {
+  const e = S.entries.find((x) => x.id === id);
+  if (!e || !S.db) return;
+  const prev = e.readAt;
+  e.readAt = read ? new Date().toISOString() : null;
+  if (read) openState[id] = false;
+  render();
+  if (read) document.querySelector(`[data-entry="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "nearest" });
+  try { await S.db.collection("entries").doc(id).update({ readAt: e.readAt }); }
+  catch (err) { e.readAt = prev; render(); }
 }
 
 async function setPracticeStatus(id, status) {
